@@ -40,6 +40,10 @@
     "webpack-hot-middleware": "^2.7.1"
   },
   "dependencies": {
-    "react-document-title": "^2.0.2"
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "react-document-title": "^2.0.2",
+    "request": "^2.79.0",
+    "superagent": "^3.3.1"
   }
 }

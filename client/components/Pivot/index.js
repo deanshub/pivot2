@@ -29,7 +29,7 @@ export default class Pivot extends Component {
 
   render() {
     const {data} = this.props
-console.log(data);
+
     return (
       <table
           className={classnames(style.container)}

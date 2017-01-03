@@ -4,18 +4,39 @@ import { connect } from 'react-redux'
 import classnames from 'classnames'
 // import Sisense, {Widget} from '../../components/Sisense'
 import Pivot from '../../components/Pivot'
+import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
 // import * as BoardActions from '../../ducks/board'
 import data from '../../store/data.mock'
 
 class App extends Component {
+  constructor(props, context) {
+    super(props, context)
+
+    this.state = {
+      pivotData : data,
+    }
+
+    this.getResults = this.getResults.bind(this)
+
+  }
+
+  getResults(results) {
+    this.setState({
+      pivotData: results,
+    })
+  }
+
   render() {
+    const { pivotData } = this.state
 
     return (
       <div
           className={classnames(style.container)}
       >
-        <Pivot data={data}/>
+        <QueryPanel onResult={this.getResults}/>
+        <hr />
+        <Pivot data={pivotData}/>
       </div>
     )
   }

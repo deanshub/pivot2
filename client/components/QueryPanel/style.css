@@ -1,0 +1,25 @@
+.paramsContainer {
+  margin: 5px;
+  display: flex;
+  flex-direction: column;
+  height: 250px;
+}
+
+.paramWrapper {
+  display: flex;
+  flex-direction: row;
+  width: 360px;
+  margin: auto 0;
+}
+
+.paramCell {
+  margin: 0 auto;
+}
+
+.paramLabel {
+  width: 80px;
+}
+
+.paramInput {
+  width: 280px;
+}
