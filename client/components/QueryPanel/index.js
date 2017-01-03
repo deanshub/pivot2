@@ -67,7 +67,7 @@ export default class Pivot extends Component {
       return
     }
 
-    let datasource = parsedJaql.datasource.id
+    let datasource = parsedJaql.datasource.id || parsedJaql.datasource.fullname
     // request.get(`http://${baseUrl}/api/v1/dashboards`)
     // request.post(`http://${baseUrl}/api/datasources/${datasource}/jaql`)
     request.post(`http://${test}/jaqlRunner`)
