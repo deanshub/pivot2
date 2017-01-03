@@ -93,7 +93,7 @@ export default class Pivot extends Component {
 
     return (
       <div>
-        <h3>Query Panel1</h3>
+        <h3>Query Panel</h3>
         <div className={style.paramsContainer}>
           <div className={style.paramWrapper}>
             <div className={`${style.paramCell} ${style.paramLabel}`}>Base Url:</div>
