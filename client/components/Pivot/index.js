@@ -4,7 +4,8 @@ import style from './style.css'
 
 export default class Pivot extends Component {
   static propTypes = {
-    data: PropTypes.object,
+    data: PropTypes.array,
+    hirarchy: PropTypes.array,
   }
   // static defaultProps = {
   // }
@@ -12,9 +13,10 @@ export default class Pivot extends Component {
   // componentDidMount(){
   // }
   getCol(col, index){
+    // console.log(col);
     return (
       <td key={index}>
-        {col.text}
+        {col.toString()}
       </td>
     )
   }
@@ -27,8 +29,12 @@ export default class Pivot extends Component {
     )
   }
 
+  getHeaders(hirarchy){
+    return hirarchy.map(header=><th key={header.name}>{header.name}</th>)
+  }
+
   render() {
-    const {data} = this.props
+    const {data, hirarchy} = this.props
 console.log(data);
     return (
       <table
@@ -36,10 +42,10 @@ console.log(data);
           ref={container=>this.container=container}
       >
         <thead>
-          <tr>{data.headers.map(header=><th key={header}>{header}</th>)}</tr>
+          <tr>{this.getHeaders(hirarchy)}</tr>
         </thead>
         <tbody>
-          {data.values.map(::this.getRow)}
+          {data.map(::this.getRow)}
         </tbody>
       </table>
     )

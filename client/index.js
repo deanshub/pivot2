@@ -12,7 +12,7 @@ const store = configure()
 const history = syncHistoryWithStore(browserHistory, store)
 
 ReactDOM.render(
-  <DocumentTitle title="Sisense Slideshow">
+  <DocumentTitle title="Pivot 2.0">
     <Provider store={store}>
       <Router history={history}>
         <Route path="/" component={App}>
