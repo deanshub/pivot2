@@ -4,11 +4,12 @@ import { connect } from 'react-redux'
 import classnames from 'classnames'
 // import Sisense, {Widget} from '../../components/Sisense'
 import Pivot from '../../components/Pivot'
+import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
 // import * as BoardActions from '../../ducks/board'
 
 // import mockData from '../../store/data.mock'
-// import transformer from '../../store/transformer'
+import transformer from '../../store/transformer'
 import * as generator from '../../store/generator'
 
 
@@ -61,7 +62,7 @@ const generatedData = generator.generate([{
   type: 'integer',
   min: 100,
   max: 1000000,
-}], 50000)
+}], 1000)
 
 const convertedGeneratedData = generatedData.map(row=>{
   let newRow = []
@@ -73,20 +74,35 @@ const convertedGeneratedData = generatedData.map(row=>{
 
 
 class App extends Component {
+  constructor(props, context) {
+    super(props, context)
+
+    this.state = {
+      pivotData : {
+        hirarchy:generatedDataHirarchy,
+        data:convertedGeneratedData,
+      },
+    }
+  }
+
+  getResults(results) {
+    this.setState({
+      pivotData: transformer.jaqlresultToPivot(results),
+    })
+  }
+
   render() {
     // const pivotData = transformer.jaqlresultToPivot(mockData)
+    const { pivotData } = this.state
 
     return (
       <div
           className={classnames(style.container)}
       >
-        {/* <Pivot
+        <QueryPanel onResult={::this.getResults} />
+        <Pivot
             data={pivotData.data}
             hirarchy={pivotData.hirarchy}
-        /> */}
-        <Pivot
-            data={convertedGeneratedData}
-            hirarchy={generatedDataHirarchy}
         />
       </div>
     )

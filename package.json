@@ -7,6 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "set NODE_ENV=development&&webpack-dev-server -d --history-api-fallback --hot --inline --progress --colors --port 6789",
+    "webpack": "webpack -d --inline --progress --colors --watch",
+    "server": "nodemon server/app.js",
+    "dev": "concurrently \"yarn run webpack\" \"yarn run server\"",
     "build": "set NODE_ENV=production&&webpack -p --progress --colors"
   },
   "license": "MIT",
@@ -20,6 +23,7 @@
     "babel-preset-stage-0": "^6.5.0",
     "babel-runtime": "^6.5.0",
     "classnames": "^2.2.3",
+    "concurrently": "^3.1.0",
     "css-loader": "^0.23.1",
     "eslint": "^3.12.0",
     "eslint-plugin-react": "^6.8.0",
@@ -40,6 +44,10 @@
     "webpack-hot-middleware": "^2.7.1"
   },
   "dependencies": {
-    "react-document-title": "^2.0.2"
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "react-document-title": "^2.0.2",
+    "request": "^2.79.0",
+    "superagent": "^3.3.1"
   }
 }

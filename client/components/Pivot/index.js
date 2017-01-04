@@ -16,7 +16,7 @@ export default class Pivot extends Component {
     // console.log(col);
     return (
       <td key={index}>
-        {col.toString()}
+        {col.text!==undefined?col.text:col.toString()}
       </td>
     )
   }
@@ -35,7 +35,7 @@ export default class Pivot extends Component {
 
   render() {
     const {data, hirarchy} = this.props
-console.log(data);
+
     return (
       <table
           className={classnames(style.container)}
