@@ -9,7 +9,8 @@ import style from './style.css'
 // import * as BoardActions from '../../ducks/board'
 
 // import mockData from '../../store/data.mock'
-import transformer from '../../store/transformer'
+import TransformerWorker from '../../store/transformer.webworker'
+const transformer = new TransformerWorker()
 import * as generator from '../../store/generator'
 
 
@@ -86,13 +87,15 @@ class App extends Component {
   }
 
   getResults(results) {
-    this.setState({
-      pivotData: transformer.jaqlresultToPivot(results),
+    transformer.postMessage(results)
+    transformer.addEventListener('message',(e)=>{
+      this.setState({
+        pivotData: e.data,
+      })
     })
   }
 
   render() {
-    // const pivotData = transformer.jaqlresultToPivot(mockData)
     const { pivotData } = this.state
 
     return (

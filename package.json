@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "set NODE_ENV=development&&webpack-dev-server -d --history-api-fallback --hot --inline --progress --colors --port 6789",
     "webpack": "webpack -d --inline --progress --colors --watch",
-    "server": "nodemon server/app.js",
+    "server": "nodemon --ignore server/static server/app.js",
     "dev": "concurrently \"yarn run webpack\" \"yarn run server\"",
     "build": "set NODE_ENV=production&&webpack -p --progress --colors"
   },
@@ -48,6 +48,7 @@
     "express": "^4.14.0",
     "react-document-title": "^2.0.2",
     "request": "^2.79.0",
-    "superagent": "^3.3.1"
+    "superagent": "^3.3.1",
+    "worker-loader": "^0.7.1"
   }
 }
