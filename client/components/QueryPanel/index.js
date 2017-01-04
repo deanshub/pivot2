@@ -63,8 +63,6 @@ export default class Pivot extends Component {
     }
 
     let datasource = parsedJaql.datasource.id || parsedJaql.datasource.fullname
-    // request.get(`http://${baseUrl}/api/v1/dashboards`)
-    // request.post(`http://${baseUrl}/api/datasources/${datasource}/jaql`)
     request.post(`http://${test}/jaqlRunner`)
     .send({
       jaql: parsedJaql,
@@ -73,7 +71,6 @@ export default class Pivot extends Component {
       datasource,
     })
     .set('Accept', 'application/json')
-    // .set('Authorization', fullToken)
     .then((result) => {
       let jaqlResult = JSON.parse(result.text)
 
@@ -91,7 +88,7 @@ export default class Pivot extends Component {
         <h3>Query Panel</h3>
         <div className={style.paramsContainer}>
           <div className={style.paramWrapper}>
-            <div className={`${style.paramCell} ${style.paramLabel}`}>Base Url:</div>
+            <div className={classnames(style.paramCell, style.paramLabel)}>Base Url:</div>
             <div className={style.paramCell}>
               <input className={style.paramInput}
                   onChange={(e)=>::this.urlChange(e.target.value)}
@@ -101,7 +98,7 @@ export default class Pivot extends Component {
             </div>
           </div>
           <div className={style.paramWrapper}>
-            <div className={`${style.paramCell} ${style.paramLabel}`}>Token:</div>
+            <div className={classnames(style.paramCell, style.paramLabel)}>Token:</div>
             <div className={style.paramCell}>
               <input className={style.paramInput}
                   onChange={(e)=>::this.tokenChange(e.target.value)}
@@ -111,7 +108,7 @@ export default class Pivot extends Component {
             </div>
           </div>
           <div className={style.paramWrapper}>
-            <div className={`${style.paramCell} ${style.paramLabel}`}>Jaql:</div>
+            <div className={classnames(style.paramCell, style.paramLabel)}>Jaql:</div>
             <div className={style.paramCell}>
               <textarea className={style.paramInput}
                   onChange={(e)=>::this.jaqlChange(e.target.value)}
