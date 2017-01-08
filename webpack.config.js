@@ -41,6 +41,10 @@ module.exports = {
   module: {
     loaders: [
       {
+        test: /\.webworker\.js$/,
+        loader: 'worker-loader',
+      },
+      {
         test: /\.html$/,
         loader: 'file?name=[name].[ext]',
       },
