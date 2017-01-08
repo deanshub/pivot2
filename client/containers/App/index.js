@@ -13,6 +13,7 @@ import transformer from '../../store/transformer'
 import * as generator from '../../store/generator'
 
 
+
 const generatedDataHirarchy = [{
   name:'date',
   type:'row',
@@ -75,6 +76,7 @@ const convertedGeneratedData = generatedData.map(row=>{
 
 class App extends Component {
   constructor(props, context) {
+
     super(props, context)
 
     this.state = {
@@ -91,6 +93,46 @@ class App extends Component {
     })
   }
 
+  getChunk(chunk) {
+
+    const { pivotData } = this.state
+
+    let newData = []
+
+    for (let key in chunk) {
+      newData.push(chunk[key])
+      newData.push(chunk[key])
+    }
+
+    let newValues = pivotData.data
+    newValues.push(newData)
+
+    var results = {
+      hirarchy: Object.keys(chunk).map((curr)=> {
+        return {
+          name: curr,
+          type: 'row',
+        }
+      }),
+      data: newValues,
+    }
+
+    this.setState({
+      pivotData: results
+    })
+  }
+
+  startStream() {
+    let results = {
+      hirarchy: [],
+      data: [],
+    }
+
+    this.setState({
+      pivotData: results,
+    })
+  }
+
   render() {
     // const pivotData = transformer.jaqlresultToPivot(mockData)
     const { pivotData } = this.state
@@ -99,7 +141,7 @@ class App extends Component {
       <div
           className={classnames(style.container)}
       >
-        <QueryPanel onResult={::this.getResults} />
+        <QueryPanel onResult={::this.getResults} onChunk={::this.getChunk} onStream={::this.startStream}/>
         <Pivot
             data={pivotData.data}
             hirarchy={pivotData.hirarchy}

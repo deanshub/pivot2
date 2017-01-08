@@ -3,6 +3,9 @@ import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
 
+import IO from 'socket.io-client'
+let socket = IO(`http://localhost:9999`)
+
 export default class Pivot extends Component {
   constructor(props, context) {
     super(props, context)
@@ -11,7 +14,12 @@ export default class Pivot extends Component {
       token : '',
       jaql: '',
       url: 'localhost:8888',
+      streamData: '',
     }
+
+    socket.on('streamChunk', function(data) {
+      props.onChunk(data)
+    })
   }
 
   tokenChange(token) {
@@ -30,6 +38,59 @@ export default class Pivot extends Component {
     this.setState({
       url,
     })
+  }
+
+  stream() {
+    const { onResult, onStream } = this.props
+    const { token, jaql, url } = this.state
+
+    let baseUrl = url
+
+    if (baseUrl.indexOf('://') > -1) {
+      baseUrl = baseUrl.split('/')[2]
+    }
+    else {
+      baseUrl = baseUrl.split('/')[0]
+    }
+
+    let fullToken = token
+
+    if (!fullToken.startsWith('Bearer ')) {
+      fullToken = `Bearer ${token}`
+    }
+
+    let test = 'localhost:9999'
+
+    let parsedJaql = jaql
+
+    let datasource = 'Sample%20ECommerce'
+
+    onStream()
+
+    socket.emit('streamRequest', {
+      jaql: parsedJaql,
+      token: fullToken,
+      baseUrl: `http://${baseUrl}`,
+      datasource,
+    })
+
+
+    // request.post(`http://${test}/jaqlStream`)
+    // .send({
+    //   jaql: parsedJaql,
+    //   token: fullToken,
+    //   baseUrl: `http://${baseUrl}`,
+    //   datasource,
+    // })
+    // .then((result) => {
+    //   console.log('success')
+    //   // let jaqlResult = JSON.parse(result.text)
+    //   //
+    //   // return onResult(jaqlResult)
+    // }).catch((err) =>{
+    //   console.log('err', err)
+    // })
+
   }
 
   sendJaql() {
@@ -81,7 +142,7 @@ export default class Pivot extends Component {
   }
 
   render() {
-    const { token, jaql, url } = this.state
+    const { token, jaql, url, streamData } = this.state
 
     return (
       <div>
@@ -120,6 +181,14 @@ export default class Pivot extends Component {
         </div>
         <div>
           <button onClick={::this.sendJaql}>Send Jaql</button>
+        </div>
+        <div>
+          <button onClick={::this.stream}>Try Streaming</button>
+          <div>
+          {
+            streamData.toString()
+          }
+          </div>
         </div>
       </div>
     )
