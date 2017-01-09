@@ -8,25 +8,28 @@ export default class Pivot extends Component {
     super(props, context)
 
     this.state = {
-      token : '',
-      jaql: '',
-      url: 'localhost:8888',
+      token : localStorage.getItem('QueryPanel.token')||'',
+      jaql: localStorage.getItem('QueryPanel.jaql')||'',
+      url: localStorage.getItem('QueryPanel.url')||'localhost:8888',
     }
   }
 
   tokenChange(token) {
+    localStorage.setItem('QueryPanel.token',token)
     this.setState({
       token,
     })
   }
 
   jaqlChange(jaql) {
+    localStorage.setItem('QueryPanel.jaql',jaql)
     this.setState({
       jaql,
     })
   }
 
   urlChange(url) {
+    localStorage.setItem('QueryPanel.url',url)
     this.setState({
       url,
     })
