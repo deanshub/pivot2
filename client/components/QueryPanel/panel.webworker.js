@@ -5,11 +5,11 @@ const socket = IO(`${location.protocol}//${location.host}`)
 import transformer from '../../store/transformer.js'
 
 let chunks = []
-let chunksLimit = 1
+let maxChunksLimit = 1
 
 let result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
-    if (chunks.length >= chunksLimit || data.end) {
+    if (chunks.length >= maxChunksLimit || data.end) {
       subscriber.next(chunks)
       chunks = []
     } else {
@@ -24,7 +24,8 @@ const subscriber = result.subscribe((data) => {
 self.addEventListener('message', (e) => {
   const {type} = e.data
   if (type==='prepareQueryArgs'){
-    const {url, token, jaql} = e.data
+    const {url, token, jaql, chunksLimit} = e.data
+    maxChunksLimit = chunksLimit
     const result = transformer.prepareQueryArgs(url, token, jaql)
     self.postMessage({...result, type:'startQuery'})
   } else if (type==='startStreamRequest') {
