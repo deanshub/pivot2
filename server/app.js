@@ -1,37 +1,52 @@
-var express = require('express')
-var path = require('path')
-var bodyParser = require('body-parser')
-var app = express()
-var request = require('request')
-var csv = require('csv-stream')
-var server = require('http').Server(app)
-var io = require('socket.io')(server)
+const express = require('express')
+const path = require('path')
+const bodyParser = require('body-parser')
+const app = express()
+const request = require('request')
+const csv = require('csv-stream')
+const server = require('http').Server(app)
+const io = require('socket.io')(server)
 
-var csvStream = csv.createStream()
 
 io.on('connection', function(client){
-  console.log('connection');
+  console.log('connection')
   client.on('streamRequest', function(data) {
+    let csvStream = csv.createStream()
 
     let jaql = data.jaql
     let token = data.token
     let baseUrl = data.baseUrl
     let datasource = data.datasource
 
-    request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`,{
+    client.cancelRequest = false
+
+    request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
       form: jaql,
       headers: {
         'Authorization': token,
       },
     }).pipe(csvStream)
-      .on('error',function(err){
-          console.error(err)
+      .on('error', function(err) {
+        console.error(err)
       })
-      .on('data',function(data){
+      .on('data', function(data) {
+        if (!client.cancelRequest) {
           // outputs an object containing a set of key/value pair representing a line found in the csv file.
           client.emit('streamChunk', data)
+        }
+
+      })
+      .on('end', function() {
+        client.emit('streamChunk', {
+          end: true,
+        })
       })
   })
+
+  client.on('cancelStream', function() {
+    client.cancelRequest = true
+  })
+
   client.on('disconnect', function() {
     console.log('disconnected')
   })

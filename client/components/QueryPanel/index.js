@@ -2,24 +2,20 @@ import request from 'superagent'
 import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
-
-import IO from 'socket.io-client'
-let socket = IO(`http://localhost:9999`)
+import PanelWorker from './panel.webworker'
 
 export default class Pivot extends Component {
   constructor(props, context) {
     super(props, context)
 
+    this.panelWorker = new PanelWorker()
+    this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
+
     this.state = {
       token : localStorage.getItem('QueryPanel.token')||'',
       jaql: localStorage.getItem('QueryPanel.jaql')||'',
       url: localStorage.getItem('QueryPanel.url')||'localhost:8888',
-      streamData: '',
     }
-
-    socket.on('streamChunk', function(data) {
-      props.onChunk(data)
-    })
   }
 
   tokenChange(token) {
@@ -43,61 +39,54 @@ export default class Pivot extends Component {
     })
   }
 
-  stream() {
-    const { onResult, onStream } = this.props
+  startStream() {
     const { token, jaql, url } = this.state
 
-    let baseUrl = url
+    const { resetStream } = this.props
+    this.streamCancled = false
+    resetStream()
+    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url})
+  }
 
-    if (baseUrl.indexOf('://') > -1) {
-      baseUrl = baseUrl.split('/')[2]
+  handleWebworkerMessage({data}){
+    const { type, ...restData } = data
+    if (type==='startQuery'){
+      this.startQuery(restData)
+    }else if (type==='onChunks' && !this.streamCancled){
+      this.onChunks(restData.data)
     }
-    else {
-      baseUrl = baseUrl.split('/')[0]
-    }
+  }
 
-    let fullToken = token
+  startQuery(data) {
+    const {
+      baseUrl,
+      fullToken,
+      parsedJaql,
+      datasource,
+    } = data
 
-    if (!fullToken.startsWith('Bearer ')) {
-      fullToken = `Bearer ${token}`
-    }
-
-    let test = 'localhost:9999'
-
-    let parsedJaql = jaql
-
-    let datasource = 'Sample%20ECommerce'
-
-    onStream()
-
-    socket.emit('streamRequest', {
-      jaql: parsedJaql,
-      token: fullToken,
-      baseUrl: `http://${baseUrl}`,
+    this.panelWorker.postMessage({
+      type:'startStreamRequest',
+      baseUrl,
+      fullToken,
+      parsedJaql,
       datasource,
     })
+  }
 
+  onChunks(data){
+    this.props.onChunks(data)
+  }
 
-    // request.post(`http://${test}/jaqlStream`)
-    // .send({
-    //   jaql: parsedJaql,
-    //   token: fullToken,
-    //   baseUrl: `http://${baseUrl}`,
-    //   datasource,
-    // })
-    // .then((result) => {
-    //   console.log('success')
-    //   // let jaqlResult = JSON.parse(result.text)
-    //   //
-    //   // return onResult(jaqlResult)
-    // }).catch((err) =>{
-    //   console.log('err', err)
-    // })
-
+  stopStream() {
+    this.streamCancled = true
+    this.panelWorker.postMessage({
+      type:'cancelStream'
+    })
   }
 
   sendJaql() {
-    const { onResult } = this.props
+    const { getWholeResults } = this.props
     const { token, jaql, url } = this.state
 
     let baseUrl = url
@@ -138,14 +127,14 @@ export default class Pivot extends Component {
     .then((result) => {
       let jaqlResult = JSON.parse(result.text)
 
-      return onResult(jaqlResult)
+      return getWholeResults(jaqlResult)
     }).catch((err) =>{
       console.log('err', err)
     })
   }
 
   render() {
-    const { token, jaql, url, streamData } = this.state
+    const { token, jaql, url } = this.state
 
     return (
       <div>
@@ -186,12 +175,10 @@ export default class Pivot extends Component {
           <button onClick={::this.sendJaql}>Send Jaql</button>
         </div>
         <div>
-          <button onClick={::this.stream}>Try Streaming</button>
-          <div>
-          {
-            streamData.toString()
-          }
-      </div>
+          <button onClick={::this.startStream}>Try Streaming</button>
+        </div>
+        <div>
+          <button onClick={::this.stopStream}>Stop Streaming</button>
         </div>
       </div>
     )

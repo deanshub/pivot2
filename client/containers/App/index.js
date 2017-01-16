@@ -88,7 +88,7 @@ class App extends Component {
     }
   }
 
-  getResults(results) {
+  getWholeResults(results) {
     transformer.postMessage(results)
     transformer.addEventListener('message',(e)=>{
       this.setState({
@@ -97,22 +97,23 @@ class App extends Component {
     })
   }
 
-  getChunk(chunk) {
+  onChunks(chunks) {
 
     const { pivotData } = this.state
 
     let newData = []
-
-    for (let key in chunk) {
-      newData.push(chunk[key])
-      newData.push(chunk[key])
-    }
-
     let newValues = pivotData.data
-    newValues.push(newData)
+
+    chunks.forEach((chunk) => {
+      newData = []
+      for (let key in chunk) {
+        newData.push(chunk[key])
+      }
+      newValues.push(newData)
+    })
 
     var results = {
-      hirarchy: Object.keys(chunk).map((curr)=> {
+      hirarchy: Object.keys(chunks[0]).map((curr)=> {
         return {
           name: curr,
           type: 'row',
@@ -126,7 +127,7 @@ class App extends Component {
     })
   }
 
-  startStream() {
+  resetStream() {
     let results = {
       hirarchy: [],
       data: [],
@@ -144,7 +145,7 @@ class App extends Component {
       <div
           className={classnames(style.container)}
       >
-        <QueryPanel onResult={::this.getResults} onChunk={::this.getChunk} onStream={::this.startStream}/>
+        <QueryPanel getWholeResults={::this.getWholeResults} onChunks={::this.onChunks} resetStream={::this.resetStream}/>
         <Pivot
             data={pivotData.data}
             hirarchy={pivotData.hirarchy}
