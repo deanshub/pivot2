@@ -36,7 +36,9 @@ self.addEventListener('message', (e) => {
       datasource,
     })
   } else if (type==='cancelStream') {
-    subscriber.dispose()
+    if (subscriber && typeof(subscriber.dispose)==='function'){
+      subscriber.dispose()
+    }
     socket.emit('cancelStream')
   }
 })
