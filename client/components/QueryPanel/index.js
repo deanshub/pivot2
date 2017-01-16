@@ -15,6 +15,7 @@ export default class Pivot extends Component {
       token : localStorage.getItem('QueryPanel.token')||'',
       jaql: localStorage.getItem('QueryPanel.jaql')||'',
       url: localStorage.getItem('QueryPanel.url')||'localhost:8888',
+      chunksLimit: localStorage.getItem('QueryPanel.chunksLimit')||1,
     }
   }
 
@@ -39,13 +40,20 @@ export default class Pivot extends Component {
     })
   }
 
+  chunksLimitChange(chunksLimit) {
+    localStorage.setItem('QueryPanel.chunksLimit',chunksLimit)
+    this.setState({
+      chunksLimit,
+    })
+  }
+
   startStream() {
-    const { token, jaql, url } = this.state
+    const { token, jaql, url, chunksLimit } = this.state
 
     const { resetStream } = this.props
     this.streamCancled = false
     resetStream()
-    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url})
+    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit})
   }
 
   handleWebworkerMessage({data}){
@@ -134,7 +142,7 @@ export default class Pivot extends Component {
   }
 
   render() {
-    const { token, jaql, url } = this.state
+    const { token, jaql, url, chunksLimit } = this.state
 
     return (
       <div>
@@ -157,6 +165,16 @@ export default class Pivot extends Component {
                   onChange={(e)=>::this.tokenChange(e.target.value)}
                   type="text"
                   value={token}
+              />
+            </div>
+          </div>
+          <div className={style.paramWrapper}>
+            <div className={classnames(style.paramCell, style.paramLabel)}>Chunks:</div>
+            <div className={style.paramCell}>
+              <input className={style.paramInput}
+                  onChange={(e)=>::this.chunksLimitChange(e.target.value)}
+                  type="text"
+                  value={chunksLimit}
               />
             </div>
           </div>
