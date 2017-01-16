@@ -16,6 +16,7 @@ export default class Pivot extends Component {
       jaql: localStorage.getItem('QueryPanel.jaql')||'',
       url: localStorage.getItem('QueryPanel.url')||'localhost:8888',
       chunksLimit: localStorage.getItem('QueryPanel.chunksLimit')||1,
+      pageSize: localStorage.getItem('QueryPanel.pageSize')||0,
     }
   }
 
@@ -47,13 +48,20 @@ export default class Pivot extends Component {
     })
   }
 
+  pageChange(pageSize) {
+    localStorage.setItem('QueryPanel.pageSize',pageSize)
+    this.setState({
+      pageSize,
+    })
+  }
+
   startStream() {
-    const { token, jaql, url, chunksLimit } = this.state
+    const { token, jaql, url, chunksLimit, pageSize } = this.state
 
     const { resetStream } = this.props
     this.streamCancled = false
     resetStream()
-    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit})
+    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize})
   }
 
   handleWebworkerMessage({data}){
@@ -142,15 +150,15 @@ export default class Pivot extends Component {
   }
 
   render() {
-    const { token, jaql, url, chunksLimit } = this.state
+    const { token, jaql, url, chunksLimit, pageSize } = this.state
 
     return (
       <div>
         <h3>Query Panel</h3>
         <div className={style.paramsContainer}>
           <div className={style.paramWrapper}>
-            <div className={classnames(style.paramCell, style.paramLabel)}>Base Url:</div>
-            <div className={style.paramCell}>
+            <div className={classnames(style.paramCell)}>Base Url:</div>
+            <div className={style.paramInputContainer}>
               <input className={style.paramInput}
                   onChange={(e)=>::this.urlChange(e.target.value)}
                   type="text"
@@ -159,8 +167,8 @@ export default class Pivot extends Component {
             </div>
           </div>
           <div className={style.paramWrapper}>
-            <div className={classnames(style.paramCell, style.paramLabel)}>Token:</div>
-            <div className={style.paramCell}>
+            <div className={classnames(style.paramCell)}>Token:</div>
+            <div className={style.paramInputContainer}>
               <input className={style.paramInput}
                   onChange={(e)=>::this.tokenChange(e.target.value)}
                   type="text"
@@ -169,18 +177,18 @@ export default class Pivot extends Component {
             </div>
           </div>
           <div className={style.paramWrapper}>
-            <div className={classnames(style.paramCell, style.paramLabel)}>Chunks:</div>
-            <div className={style.paramCell}>
+            <div className={classnames(style.paramCell)}>Chunks:</div>
+            <div className={style.paramInputContainer}>
               <input className={style.paramInput}
                   onChange={(e)=>::this.chunksLimitChange(e.target.value)}
-                  type="text"
+                  type="number"
                   value={chunksLimit}
               />
             </div>
           </div>
           <div className={style.paramWrapper}>
-            <div className={classnames(style.paramCell, style.paramLabel)}>Jaql:</div>
-            <div className={style.paramCell}>
+            <div className={classnames(style.paramLabel)}>Jaql:</div>
+            <div className={style.paramInputContainer}>
               <textarea className={style.paramInput}
                   onChange={(e)=>::this.jaqlChange(e.target.value)}
                   rows="10"
@@ -188,15 +196,27 @@ export default class Pivot extends Component {
               />
             </div>
           </div>
+          <div className={style.paramWrapper}>
+            <div className={classnames(style.paramCell)}>Page:</div>
+            <div className={style.paramInputContainer}>
+              <input className={style.paramInput}
+                  onChange={(e)=>::this.pageChange(e.target.value)}
+                  type="number"
+                  value={pageSize}
+              />
+            </div>
+          </div>
         </div>
-        <div>
-          <button onClick={::this.sendJaql}>Send Jaql</button>
-        </div>
-        <div>
-          <button onClick={::this.startStream}>Try Streaming</button>
-        </div>
-        <div>
-          <button onClick={::this.stopStream}>Stop Streaming</button>
+        <div className={style.buttonContainer}>
+          <div>
+            <button onClick={::this.sendJaql}>Send Jaql</button>
+          </div>
+          <div>
+            <button onClick={::this.startStream}>Try Streaming</button>
+          </div>
+          <div>
+            <button onClick={::this.stopStream}>Stop Streaming</button>
+          </div>
         </div>
       </div>
     )

@@ -1,25 +1,27 @@
 .paramsContainer {
-  margin: 5px;
+  margin: 10px;
   display: flex;
-  flex-direction: column;
-  height: 250px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .paramWrapper {
   display: flex;
   flex-direction: row;
-  width: 360px;
-  margin: auto 0;
-}
-
-.paramCell {
-  margin: 0 auto;
-}
-
-.paramLabel {
-  width: 80px;
+  width: 30%;
+  margin: 10px 0;
 }
 
 .paramInput {
-  width: 280px;
+  width: 100%;
+}
+
+.paramInputContainer{
+  flex: 1;
+}
+
+.buttonContainer{
+  display: flex;
+  margin: 10px;
 }

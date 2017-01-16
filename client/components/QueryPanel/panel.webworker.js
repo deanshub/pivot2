@@ -26,9 +26,9 @@ const subscriber = result.subscribe((data) => {
 self.addEventListener('message', (e) => {
   const {type} = e.data
   if (type==='prepareQueryArgs'){
-    const {url, token, jaql, chunksLimit} = e.data
+    const {url, token, jaql, chunksLimit, pageSize} = e.data
     maxChunksLimit = chunksLimit
-    const result = transformer.prepareQueryArgs(url, token, jaql)
+    const result = transformer.prepareQueryArgs({url, token, jaql, pageSize})
     self.postMessage({...result, type:'startQuery'})
   } else if (type==='startStreamRequest') {
     const {baseUrl, fullToken, parsedJaql, datasource} = e.data

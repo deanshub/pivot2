@@ -15,9 +15,17 @@ export default {
     }
   },
 
-  prepareQueryArgs: (url, token, jaql)=>{
-    let baseUrl = url
+  prepareQueryArgs: ({url, token, jaql, pageSize})=>{
+    let jaqlJson
+    try {
+      jaqlJson = JSON.parse(jaql)
+      jaqlJson.count = parseInt(pageSize)
+    } catch (err) {
+      console.error('err', err)
+      return
+    }
 
+    let baseUrl = url
     if (baseUrl.indexOf('://') > -1) {
       baseUrl = baseUrl.split('/')[2]
     } else {
@@ -30,16 +38,7 @@ export default {
       fullToken = `Bearer ${token}`
     }
 
-    const parsedJaql = `data=${encodeURIComponent(encodeURIComponent(jaql))}`
-
-    let jaqlJson
-
-    try {
-      jaqlJson = JSON.parse(jaql)
-    } catch (err) {
-      console.error('err', err)
-      return
-    }
+    const parsedJaql = `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`
 
     const datasource = jaqlJson.datasource.id || jaqlJson.datasource.fullname
 
