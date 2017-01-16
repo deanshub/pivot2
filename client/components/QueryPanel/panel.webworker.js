@@ -1,6 +1,6 @@
 import Rx from 'rxjs/Rx'
 import IO from 'socket.io-client'
-const socket = IO(`http://localhost:9999`)
+const socket = IO(`${location.protocol}//${location.host}`)
 
 import transformer from '../../store/transformer.js'
 
