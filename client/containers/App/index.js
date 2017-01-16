@@ -101,6 +101,7 @@ class App extends Component {
 
     const { pivotData } = this.state
 
+// TODO: transform in the webworker!
     let newData = []
     let newValues = pivotData.data
 
@@ -112,7 +113,8 @@ class App extends Component {
       newValues.push(newData)
     })
 
-    var results = {
+    const results = {
+      // TODO: hirarchy should be set only on first step?
       hirarchy: Object.keys(chunks[0]).map((curr)=> {
         return {
           name: curr,
@@ -123,7 +125,7 @@ class App extends Component {
     }
 
     this.setState({
-      pivotData: results
+      pivotData: results,
     })
   }
 

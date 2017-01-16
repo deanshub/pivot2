@@ -18,7 +18,9 @@ let result = Rx.Observable.create(function (subscriber) {
   })
 })
 const subscriber = result.subscribe((data) => {
-  self.postMessage({data, type:'onChunks'})
+  if (data.length>0){
+    self.postMessage({data, type:'onChunks'})
+  }
 })
 
 self.addEventListener('message', (e) => {
