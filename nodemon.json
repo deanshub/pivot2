@@ -1,4 +1,8 @@
 {
   "verbose": true,
-  "ignore": ["server/static/","client/"]
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "watch": ["server/"],
+  "ignore": ["server/static/"]
 }
