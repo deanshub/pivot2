@@ -1,4 +1,5 @@
 ﻿#!/bin/bash
+PATH=$PATH:/home/sisense/.nvm/versions/node/v7.4.0/bin
 pm2 delete pivot2
 git --work-tree=~/apps/pivot2 checkout -f
 pushd ~/apps/pivot2

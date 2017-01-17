@@ -31,24 +31,26 @@ export default class Pivot extends Component {
   }
 
   getHeaders(hirarchy){
-    return [{name:'Row'},...hirarchy].map(header=><th key={header.name}>{header.name}</th>)
+    return [{name:'Row'},...hirarchy].map(header=><th className={classnames(style.pivotHeaders)} key={header.name}>{header.name}</th>)
   }
 
   render() {
     const {data, hirarchy} = this.props
 
     return (
-      <table
-          className={classnames(style.container)}
-          ref={container=>this.container=container}
-      >
-        <thead>
-          <tr>{this.getHeaders(hirarchy)}</tr>
-        </thead>
-        <tbody>
-          {data.map(::this.getRow)}
-        </tbody>
-      </table>
+      <div
+          className={classnames(style.container)}>
+        <table className={classnames(style.pivotTable)}
+            ref={container=>this.container=container}
+        >
+          <thead>
+            <tr>{this.getHeaders(hirarchy)}</tr>
+          </thead>
+          <tbody>
+            {data.map(::this.getRow)}
+          </tbody>
+        </table>
+      </div>
     )
   }
 }
