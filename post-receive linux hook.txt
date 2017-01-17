@@ -1,7 +1,8 @@
 ﻿#!/bin/bash
-PATH=$PATH:/home/sisense/.nvm/versions/node/v7.4.0/bin
+PATH=$PATH:/home/sisense/.nvm/versions/node/v7.4.0/bin:/home/sisense/.nvm
+/home/sisense/.nvm/nvm.sh
 pm2 delete pivot2
-git --work-tree=~/apps/pivot2 checkout -f
+GIT_WORK_TREE=~/apps/pivot2 git checkout -f
 pushd ~/apps/pivot2
 nvm use 7.4.0
 yarn
