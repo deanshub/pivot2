@@ -7,5 +7,5 @@ pushd ~/apps/pivot2
 nvm use 7.4.0
 yarn
 yarn run build
-pm2 start ~/apps/pivot2/server/app.js --name pivot2
+NODE_ENV=production pm2 start ~/apps/pivot2/server/app.js --name pivot2
 popd
