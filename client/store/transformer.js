@@ -15,11 +15,13 @@ export default {
     }
   },
 
-  prepareQueryArgs: ({url, token, jaql, pageSize})=>{
+  prepareQueryArgs: ({url, token, jaql, pageSize, pageNumber})=>{
     let jaqlJson
     try {
+      const parsedPageNumber = parseInt(pageNumber)
       jaqlJson = JSON.parse(jaql)
       jaqlJson.count = parseInt(pageSize)
+      jaqlJson.offset = (parsedPageNumber - 1) * pageSize
     } catch (err) {
       console.error('err', err)
       return

@@ -24,13 +24,14 @@ export default class Pivot extends Component {
   getRow(row, index){
     return (
       <tr key={index}>
+        <td>{index+1}</td>
         {row.map(::this.getCol)}
       </tr>
     )
   }
 
   getHeaders(hirarchy){
-    return hirarchy.map(header=><th key={header.name}>{header.name}</th>)
+    return [{name:'Row'},...hirarchy].map(header=><th key={header.name}>{header.name}</th>)
   }
 
   render() {

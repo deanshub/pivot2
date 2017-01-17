@@ -17,51 +17,24 @@ export default class Pivot extends Component {
       url: localStorage.getItem('QueryPanel.url')||'localhost:8888',
       chunksLimit: localStorage.getItem('QueryPanel.chunksLimit')||1,
       pageSize: localStorage.getItem('QueryPanel.pageSize')||0,
+      pageNumber: localStorage.getItem('QueryPanel.pageNumber')||1,
     }
   }
 
-  tokenChange(token) {
-    localStorage.setItem('QueryPanel.token',token)
+  changeStateProp(name, value){
+    localStorage.setItem(`QueryPanel.${name}`, value)
     this.setState({
-      token,
-    })
-  }
-
-  jaqlChange(jaql) {
-    localStorage.setItem('QueryPanel.jaql',jaql)
-    this.setState({
-      jaql,
-    })
-  }
-
-  urlChange(url) {
-    localStorage.setItem('QueryPanel.url',url)
-    this.setState({
-      url,
-    })
-  }
-
-  chunksLimitChange(chunksLimit) {
-    localStorage.setItem('QueryPanel.chunksLimit',chunksLimit)
-    this.setState({
-      chunksLimit,
-    })
-  }
-
-  pageChange(pageSize) {
-    localStorage.setItem('QueryPanel.pageSize',pageSize)
-    this.setState({
-      pageSize,
+      [name]:value,
     })
   }
 
   startStream() {
-    const { token, jaql, url, chunksLimit, pageSize } = this.state
+    const { token, jaql, url, chunksLimit, pageSize, pageNumber } = this.state
 
     const { resetStream } = this.props
     this.streamCancled = false
     resetStream()
-    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize})
+    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber})
   }
 
   handleWebworkerMessage({data}){
@@ -150,7 +123,7 @@ export default class Pivot extends Component {
   }
 
   render() {
-    const { token, jaql, url, chunksLimit, pageSize } = this.state
+    const { token, jaql, url, chunksLimit, pageSize, pageNumber } = this.state
 
     return (
       <div>
@@ -160,7 +133,7 @@ export default class Pivot extends Component {
             <div className={classnames(style.paramCell)}>Base Url:</div>
             <div className={style.paramInputContainer}>
               <input className={style.paramInput}
-                  onChange={(e)=>::this.urlChange(e.target.value)}
+                  onChange={(e)=>::this.changeStateProp('url', e.target.value)}
                   type="text"
                   value={url}
               />
@@ -170,7 +143,7 @@ export default class Pivot extends Component {
             <div className={classnames(style.paramCell)}>Token:</div>
             <div className={style.paramInputContainer}>
               <input className={style.paramInput}
-                  onChange={(e)=>::this.tokenChange(e.target.value)}
+                  onChange={(e)=>::this.changeStateProp('token',e.target.value)}
                   type="text"
                   value={token}
               />
@@ -180,7 +153,7 @@ export default class Pivot extends Component {
             <div className={classnames(style.paramCell)}>Chunks:</div>
             <div className={style.paramInputContainer}>
               <input className={style.paramInput}
-                  onChange={(e)=>::this.chunksLimitChange(e.target.value)}
+                  onChange={(e)=>::this.changeStateProp('chunksLimit',e.target.value)}
                   type="number"
                   value={chunksLimit}
               />
@@ -190,19 +163,29 @@ export default class Pivot extends Component {
             <div className={classnames(style.paramLabel)}>Jaql:</div>
             <div className={style.paramInputContainer}>
               <textarea className={style.paramInput}
-                  onChange={(e)=>::this.jaqlChange(e.target.value)}
+                  onChange={(e)=>::this.changeStateProp('jaql', e.target.value)}
                   rows="10"
                   value={jaql}
               />
             </div>
           </div>
           <div className={style.paramWrapper}>
-            <div className={classnames(style.paramCell)}>Page:</div>
+            <div className={classnames(style.paramCell)}>Page Size:</div>
             <div className={style.paramInputContainer}>
               <input className={style.paramInput}
-                  onChange={(e)=>::this.pageChange(e.target.value)}
+                  onChange={(e)=>::this.changeStateProp('pageSize', e.target.value)}
                   type="number"
                   value={pageSize}
+              />
+            </div>
+          </div>
+          <div className={style.paramWrapper}>
+            <div className={classnames(style.paramCell)}>Page Number:</div>
+            <div className={style.paramInputContainer}>
+              <input className={style.paramInput}
+                  onChange={(e)=>::this.changeStateProp('pageNumber', e.target.value)}
+                  type="number"
+                  value={pageNumber}
               />
             </div>
           </div>
