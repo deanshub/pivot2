@@ -1,0 +1,9 @@
+﻿#!/bin/bash
+pm2 delete pivot2
+git --work-tree=~/apps/pivot2 checkout -f
+pushd ~/apps/pivot2
+nvm use 7.4.0
+yarn
+yarn run build
+pm2 start ~/apps/pivot2/server/app.js --name pivot2
+popd
