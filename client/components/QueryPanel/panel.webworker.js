@@ -12,6 +12,9 @@ let result = Rx.Observable.create(function (subscriber) {
     if (chunks.length >= maxChunksLimit || data.end) {
       subscriber.next(chunks)
       chunks = []
+      if (!data.hasOwnProperty('end')) {
+        chunks.push(data)
+      }
     } else {
       chunks.push(data)
     }
