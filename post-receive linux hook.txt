@@ -6,6 +6,6 @@ GIT_WORK_TREE=~/apps/pivot2 git checkout -f
 pushd ~/apps/pivot2
 nvm use 7.4.0
 yarn
-yarn run build
+yarn run build_linux
 NODE_ENV=production pm2 start ~/apps/pivot2/server/app.js --name pivot2
 popd
