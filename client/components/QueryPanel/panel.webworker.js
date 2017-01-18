@@ -10,7 +10,7 @@ let maxChunksLimit = 1
 let result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
     if (chunks.length >= maxChunksLimit || data.end) {
-      subscriber.next(chunks)
+      subscriber.next({chunks, end: data.end})
       chunks = []
       if (!data.hasOwnProperty('end')) {
         chunks.push(data)
@@ -21,9 +21,14 @@ let result = Rx.Observable.create(function (subscriber) {
   })
 })
 const subscriber = result.subscribe((data) => {
-  if (data.length>0){
-    const pivotData = transformer.jaqlChunkToPivotData(data)
-    self.postMessage({pivotData, type:'onChunks'})
+  if (data.chunks.length>0){
+    const pivotData = transformer.jaqlChunkToPivotData(data.chunks)
+
+    self.postMessage({
+      pivotData,
+      end: data.end,
+      type:'onChunks',
+    })
   }
 })
 
