@@ -98,34 +98,13 @@ class App extends Component {
   }
 
   onChunks(chunks) {
-
     const { pivotData } = this.state
 
-// TODO: transform in the webworker!
-    let newData = []
-    let newValues = pivotData.data
-
-    chunks.forEach((chunk) => {
-      newData = []
-      for (let key in chunk) {
-        newData.push(chunk[key])
-      }
-      newValues.push(newData)
-    })
-
-    const results = {
-      // TODO: hirarchy should be set only on first step?
-      hirarchy: Object.keys(chunks[0]).map((curr)=> {
-        return {
-          name: curr,
-          type: 'row',
-        }
-      }),
-      data: newValues,
-    }
-
     this.setState({
-      pivotData: results,
+      pivotData: {
+        data: [...pivotData.data , ...chunks.data],
+        hirarchy: chunks.hirarchy,
+      },
     })
   }
 
@@ -147,7 +126,11 @@ class App extends Component {
       <div
           className={classnames(style.container)}
       >
-        <QueryPanel getWholeResults={::this.getWholeResults} onChunks={::this.onChunks} resetStream={::this.resetStream}/>
+        <QueryPanel
+            getWholeResults={::this.getWholeResults}
+            onChunks={::this.onChunks}
+            resetStream={::this.resetStream}
+        />
         <Pivot
             data={pivotData.data}
             hirarchy={pivotData.hirarchy}

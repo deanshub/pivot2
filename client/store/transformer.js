@@ -51,4 +51,30 @@ export default {
       datasource,
     }
   },
+
+  jaqlChunkToPivotData: chunks=>{
+    let pivotData =[]
+    let row
+
+    chunks.forEach((chunk) => {
+      row = []
+      for (let key in chunk) {
+        row.push(chunk[key])
+      }
+      pivotData.push(row)
+    })
+
+    const results = {
+      // TODO: hirarchy should be set only on first step?
+      hirarchy: Object.keys(chunks[0]).map((curr)=> {
+        return {
+          name: curr,
+          type: 'row',
+        }
+      }),
+      data: pivotData,
+    }
+
+    return results
+  },
 }

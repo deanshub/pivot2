@@ -12,8 +12,8 @@ export default class Pivot extends Component {
 
   // componentDidMount(){
   // }
+
   getCol(col, index){
-    // console.log(col);
     return (
       <td key={index}>
         {col.text!==undefined?col.text:col.toString()}

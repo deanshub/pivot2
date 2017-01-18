@@ -22,7 +22,8 @@ let result = Rx.Observable.create(function (subscriber) {
 })
 const subscriber = result.subscribe((data) => {
   if (data.length>0){
-    self.postMessage({data, type:'onChunks'})
+    const pivotData = transformer.jaqlChunkToPivotData(data)
+    self.postMessage({pivotData, type:'onChunks'})
   }
 })
 

@@ -42,7 +42,7 @@ export default class Pivot extends Component {
     if (type==='startQuery'){
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamCancled){
-      this.onChunks(restData.data)
+      this.onChunks(restData.pivotData)
     }
   }
 
