@@ -59,10 +59,12 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
 app.post('/jaqlRunner', function (req, res) {
-  let jaql = req.body.jaql
-  let token = req.body.token
-  let baseUrl = req.body.baseUrl
-  let datasource = req.body.datasource
+  const jaql = req.body.jaql
+  const token = req.body.token
+  const baseUrl = req.body.baseUrl
+  const datasource = req.body.datasource
+
+  jaql.format = undefined
 
   request.post(`${baseUrl}/api/datasources/${datasource}/jaql`,{
     form: JSON.stringify(jaql),
@@ -74,7 +76,6 @@ app.post('/jaqlRunner', function (req, res) {
     if (error) {
       return res.status(500).send(error)
     }
-
     return res.status(200).json(JSON.parse(body))
   })
 })
