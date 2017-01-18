@@ -10,7 +10,8 @@
     "webpack": "webpack -d --inline --progress --colors --watch",
     "server": "nodemon",
     "dev": "concurrently \"yarn run server\" \"yarn run webpack\"",
-    "build": "set NODE_ENV=production&&webpack -p --progress --colors"
+    "build": "set NODE_ENV=production&&webpack -p --progress --colors",
+    "build_linux": "NODE_ENV=production webpack -p --progress --colors"
   },
   "license": "MIT",
   "devDependencies": {

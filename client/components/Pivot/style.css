@@ -1,3 +1,12 @@
 .container{
+  height: 600px;
+  overflow: auto;
+}
 
+.pivotTable {
+  width: 100%;
+}
+
+.pivotHeaders {
+  text-align: left;
 }
