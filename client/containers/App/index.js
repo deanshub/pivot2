@@ -12,8 +12,7 @@ import style from './style.css'
 import TransformerWorker from '../../store/transformer.webworker'
 const transformer = new TransformerWorker()
 import * as generator from '../../store/generator'
-
-
+import PanelWorker from '../../components/QueryPanel/panel.webworker'
 
 const generatedDataHirarchy = [{
   name:'date',
@@ -74,11 +73,12 @@ const convertedGeneratedData = generatedData.map(row=>{
   return newRow
 })
 
-
 class App extends Component {
   constructor(props, context) {
-
     super(props, context)
+
+    this.panelWorker = new PanelWorker()
+    this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
 
     this.state = {
       pivotData : {
@@ -86,6 +86,48 @@ class App extends Component {
         data:convertedGeneratedData,
       },
     }
+
+    this.loadingNextPage = false
+    this.streamStopped = false
+  }
+
+  handleWebworkerMessage({data}){
+    const { type, ...restData } = data
+    if (type==='startQuery'){
+      this.startQuery(restData)
+    }else if (type==='onChunks' && !this.streamStopped){
+      this.onChunks(restData.pivotData, restData.end)
+    }
+  }
+
+  startQuery(data) {
+    const {
+      baseUrl,
+      fullToken,
+      parsedJaql,
+      datasource,
+    } = data
+
+    this.panelWorker.postMessage({
+      type:'startStreamRequest',
+      baseUrl,
+      fullToken,
+      parsedJaql,
+      datasource,
+    })
+  }
+
+  onChunks(chunks, end){
+    const { pivotData } = this.state
+
+    this.setState({
+      pivotData: {
+        data: [...pivotData.data , ...chunks.data],
+        hirarchy: chunks.hirarchy,
+      },
+    })
+
+    this.loadingNextPage = false
   }
 
   getWholeResults(results) {
@@ -97,18 +139,30 @@ class App extends Component {
     })
   }
 
-  onChunks(chunks) {
-    const { pivotData } = this.state
 
-    this.setState({
-      pivotData: {
-        data: [...pivotData.data , ...chunks.data],
-        hirarchy: chunks.hirarchy,
-      },
+  startStream(token, jaql, url, chunksLimit, pageSize, pageNumber) {
+    this.streamMetaData = {
+      token,
+      jaql,
+      url,
+      chunksLimit,
+      pageSize,
+      pageNumber,
+    }
+
+    this.streamStopped = false
+    this.resetPivotData()
+    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber})
+  }
+
+  stopStream() {
+    this.streamStopped = true
+    this.panelWorker.postMessage({
+      type:'cancelStream',
     })
   }
 
-  resetStream() {
+  resetPivotData() {
     let results = {
       hirarchy: [],
       data: [],
@@ -117,6 +171,27 @@ class App extends Component {
     this.setState({
       pivotData: results,
     })
+  }
+
+  loadNextPage() {
+    console.log("this.loadingNextPage", this.loadingNextPage);
+    console.log("this.streamStopped", this.streamStopped);
+    if (!this.loadingNextPage && !this.streamStopped) {
+      this.loadingNextPage = true
+
+      const {
+        token,
+        jaql,
+        url,
+        chunksLimit,
+        pageSize,
+        pageNumber,
+      } = this.streamMetaData
+
+      this.streamMetaData.pageNumber += 1
+
+      this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber: pageNumber + 1})
+    }
   }
 
   render() {
@@ -129,11 +204,14 @@ class App extends Component {
         <QueryPanel
             getWholeResults={::this.getWholeResults}
             onChunks={::this.onChunks}
-            resetStream={::this.resetStream}
+            resetPivotData={::this.resetPivotData}
+            startStream={::this.startStream}
+            stopStream={::this.stopStream}
         />
         <Pivot
             data={pivotData.data}
             hirarchy={pivotData.hirarchy}
+            loadNextPage ={::this.loadNextPage}
         />
       </div>
     )

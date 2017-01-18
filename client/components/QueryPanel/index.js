@@ -2,14 +2,10 @@ import request from 'superagent'
 import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
-import PanelWorker from './panel.webworker'
 
 export default class Pivot extends Component {
   constructor(props, context) {
     super(props, context)
-
-    this.panelWorker = new PanelWorker()
-    this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
 
     this.state = {
       token : localStorage.getItem('QueryPanel.token')||'',
@@ -28,51 +24,6 @@ export default class Pivot extends Component {
     })
   }
 
-  startStream() {
-    const { token, jaql, url, chunksLimit, pageSize, pageNumber } = this.state
-
-    const { resetStream } = this.props
-    this.streamCancled = false
-    resetStream()
-    this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber})
-  }
-
-  handleWebworkerMessage({data}){
-    const { type, ...restData } = data
-    if (type==='startQuery'){
-      this.startQuery(restData)
-    }else if (type==='onChunks' && !this.streamCancled){
-      this.onChunks(restData.pivotData)
-    }
-  }
-
-  startQuery(data) {
-    const {
-      baseUrl,
-      fullToken,
-      parsedJaql,
-      datasource,
-    } = data
-
-    this.panelWorker.postMessage({
-      type:'startStreamRequest',
-      baseUrl,
-      fullToken,
-      parsedJaql,
-      datasource,
-    })
-  }
-
-  onChunks(data){
-    this.props.onChunks(data)
-  }
-
-  stopStream() {
-    this.streamCancled = true
-    this.panelWorker.postMessage({
-      type:'cancelStream'
-    })
-  }
 
   sendJaql() {
     const { getWholeResults } = this.props
@@ -123,6 +74,7 @@ export default class Pivot extends Component {
   }
 
   render() {
+    const { startStream, stopStream } = this.props
     const { token, jaql, url, chunksLimit, pageSize, pageNumber } = this.state
 
     return (
@@ -195,10 +147,10 @@ export default class Pivot extends Component {
             <button onClick={::this.sendJaql}>Send Jaql</button>
           </div>
           <div>
-            <button onClick={::this.startStream}>Try Streaming</button>
+            <button onClick={()=>startStream(token, jaql, url, chunksLimit, pageSize, pageNumber)}>Try Streaming</button>
           </div>
           <div>
-            <button onClick={::this.stopStream}>Stop Streaming</button>
+            <button onClick={stopStream}>Stop Streaming</button>
           </div>
         </div>
       </div>
