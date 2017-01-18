@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
 
-export default class Pivot extends Component {
+export default class PivotView extends Component {
   static propTypes = {
     data: PropTypes.array,
     hirarchy: PropTypes.array,

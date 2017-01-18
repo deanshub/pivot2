@@ -3,7 +3,8 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import classnames from 'classnames'
 // import Sisense, {Widget} from '../../components/Sisense'
-import Pivot from '../../components/Pivot'
+import PivotView from '../../components/PivotView'
+import Pager from '../../components/Pager'
 import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
 // import * as BoardActions from '../../ducks/board'
@@ -89,6 +90,10 @@ class App extends Component {
 
     this.loadingNextPage = false
     this.streamStopped = false
+
+    this.streamMetaData={
+      pageNumber:1,
+    }
   }
 
   handleWebworkerMessage({data}){
@@ -210,10 +215,13 @@ class App extends Component {
             startStream={::this.startStream}
             stopStream={::this.stopStream}
         />
-        <Pivot
+        <PivotView
             data={pivotData.data}
             hirarchy={pivotData.hirarchy}
             loadNextPage ={::this.loadNextPage}
+        />
+        <Pager
+          currentPage={this.streamMetaData.pageNumber}
         />
       </div>
     )
