@@ -141,6 +141,10 @@ class App extends Component {
 
 
   startStream(token, jaql, url, chunksLimit, pageSize, pageNumber) {
+    if (!Number.isInteger(pageNumber)) {
+      pageNumber = parseInt(pageNumber)
+    }
+
     this.streamMetaData = {
       token,
       jaql,
@@ -174,8 +178,6 @@ class App extends Component {
   }
 
   loadNextPage() {
-    console.log("this.loadingNextPage", this.loadingNextPage);
-    console.log("this.streamStopped", this.streamStopped);
     if (!this.loadingNextPage && !this.streamStopped) {
       this.loadingNextPage = true
 
