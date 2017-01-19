@@ -82,10 +82,8 @@ class App extends Component {
     this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
 
     this.state = {
-      pivotData : {
-        hirarchy:generatedDataHirarchy,
-        data:convertedGeneratedData,
-      },
+      hierarchy:generatedDataHirarchy,
+      data:convertedGeneratedData,
     }
 
     this.loadingNextPage = false
@@ -111,7 +109,12 @@ class App extends Component {
       fullToken,
       parsedJaql,
       datasource,
+      hierarchy,
     } = data
+
+    this.setState({
+      hierarchy,
+    })
 
     this.panelWorker.postMessage({
       type:'startStreamRequest',
@@ -123,13 +126,10 @@ class App extends Component {
   }
 
   onChunks(chunks, end){
-    const { pivotData } = this.state
+    const { data } = this.state
 
     this.setState({
-      pivotData: {
-        data: [...pivotData.data , ...chunks.data],
-        hirarchy: chunks.hirarchy,
-      },
+      data: [...data , ...chunks],
     })
 
     this.loadingNextPage = false
@@ -139,7 +139,7 @@ class App extends Component {
     transformer.postMessage(results)
     transformer.addEventListener('message',(e)=>{
       this.setState({
-        pivotData: e.data,
+        data: e.data,
       })
     })
   }
@@ -172,13 +172,9 @@ class App extends Component {
   }
 
   resetPivotData() {
-    let results = {
-      hirarchy: [],
-      data: [],
-    }
-
     this.setState({
-      pivotData: results,
+      hierarchy: [],
+      data: [],
     })
   }
 
@@ -202,7 +198,7 @@ class App extends Component {
   }
 
   render() {
-    const { pivotData } = this.state
+    const { data, hierarchy } = this.state
 
     return (
       <div
@@ -216,8 +212,8 @@ class App extends Component {
             stopStream={::this.stopStream}
         />
         <PivotView
-            data={pivotData.data}
-            hirarchy={pivotData.hirarchy}
+            data={data}
+            hierarchy={hierarchy}
             loadNextPage ={::this.loadNextPage}
         />
         <Pager

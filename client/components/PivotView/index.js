@@ -5,7 +5,7 @@ import style from './style.css'
 export default class PivotView extends Component {
   static propTypes = {
     data: PropTypes.array,
-    hirarchy: PropTypes.array,
+    hierarchy: PropTypes.array,
   }
   // static defaultProps = {
   // }
@@ -30,8 +30,8 @@ export default class PivotView extends Component {
     )
   }
 
-  getHeaders(hirarchy){
-    return [{name:'Row'},...hirarchy].map(header=><th className={classnames(style.pivotHeaders)} key={header.name}>{header.name}</th>)
+  getHeaders(hierarchy){
+    return [{name:'Row'},...hierarchy].map(header=><th className={classnames(style.pivotHeaders)} key={header.name}>{header.name}</th>)
   }
 
   handleScroll(e) {
@@ -47,7 +47,7 @@ export default class PivotView extends Component {
   }
 
   render() {
-    const {data, hirarchy} = this.props
+    const {data, hierarchy} = this.props
 
     return (
       <div
@@ -56,7 +56,7 @@ export default class PivotView extends Component {
             ref={container=>this.container=container}
         >
           <thead>
-            <tr>{this.getHeaders(hirarchy)}</tr>
+            <tr>{this.getHeaders(hierarchy)}</tr>
           </thead>
           <tbody>
             {data.map(::this.getRow)}
