@@ -24,24 +24,22 @@ export default class Pivot extends Component {
   getRow(row, index){
     return (
       <tr key={index}>
-        <td>{index+1}</td>
         {row.map(::this.getCol)}
       </tr>
     )
   }
 
   getHeaders(hirarchy){
-    return [{name:'Row'},...hirarchy].map(header=><th className={classnames(style.pivotHeaders)} key={header.name}>{header.name}</th>)
+    console.log(hirarchy);
+    return hirarchy.map(header=><th className={classnames(style.pivotHeaders)} key={header.name}>{header.name}</th>)
   }
 
   handleScroll(e) {
     const { loadNextPage } = this.props
     const pivotTable = e.target
-    var a = pivotTable.scrollTop
-    var b = pivotTable.scrollHeight - pivotTable.clientHeight
-    var c = a / b
+    let scrollPrecent = pivotTable.scrollTop / (pivotTable.scrollHeight - pivotTable.clientHeight)
 
-    if (c > 0.7) {
+    if (scrollPrecent > 0.7) {
       loadNextPage()
     }
   }
