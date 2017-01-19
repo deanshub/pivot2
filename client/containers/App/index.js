@@ -3,7 +3,8 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import classnames from 'classnames'
 // import Sisense, {Widget} from '../../components/Sisense'
-import Pivot from '../../components/Pivot'
+import PivotView from '../../components/PivotView'
+import Pager from '../../components/Pager'
 import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
 // import * as BoardActions from '../../ducks/board'
@@ -81,14 +82,16 @@ class App extends Component {
     this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
 
     this.state = {
-      pivotData : {
-        hirarchy:generatedDataHirarchy,
-        data:convertedGeneratedData,
-      },
+      hierarchy:generatedDataHirarchy,
+      data:convertedGeneratedData,
     }
 
     this.loadingNextPage = false
     this.streamStopped = false
+
+    this.streamMetaData={
+      pageNumber:1,
+    }
   }
 
   handleWebworkerMessage({data}){
@@ -106,7 +109,12 @@ class App extends Component {
       fullToken,
       parsedJaql,
       datasource,
+      hierarchy,
     } = data
+
+    this.setState({
+      hierarchy,
+    })
 
     this.panelWorker.postMessage({
       type:'startStreamRequest',
@@ -118,13 +126,10 @@ class App extends Component {
   }
 
   onChunks(chunks, end){
-    const { pivotData } = this.state
+    const { data } = this.state
 
     this.setState({
-      pivotData: {
-        data: [...pivotData.data , ...chunks.data],
-        hirarchy: chunks.hirarchy,
-      },
+      data: [...data , ...chunks],
     })
 
     this.loadingNextPage = false
@@ -134,7 +139,7 @@ class App extends Component {
     transformer.postMessage(results)
     transformer.addEventListener('message',(e)=>{
       this.setState({
-        pivotData: e.data,
+        data: e.data,
       })
     })
   }
@@ -167,13 +172,9 @@ class App extends Component {
   }
 
   resetPivotData() {
-    let results = {
-      hirarchy: [],
-      data: [],
-    }
-
     this.setState({
-      pivotData: results,
+      hierarchy: [],
+      data: [],
     })
   }
 
@@ -197,7 +198,7 @@ class App extends Component {
   }
 
   render() {
-    const { pivotData } = this.state
+    const { data, hierarchy } = this.state
 
     return (
       <div
@@ -210,10 +211,13 @@ class App extends Component {
             startStream={::this.startStream}
             stopStream={::this.stopStream}
         />
-        <Pivot
-            data={pivotData.data}
-            hirarchy={pivotData.hirarchy}
+        <PivotView
+            data={data}
+            hierarchy={hierarchy}
             loadNextPage ={::this.loadNextPage}
+        />
+        <Pager
+          currentPage={this.streamMetaData.pageNumber}
         />
       </div>
     )

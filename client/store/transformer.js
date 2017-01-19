@@ -41,14 +41,25 @@ export default {
     }
 
     const parsedJaql = `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`
-
     const datasource = jaqlJson.datasource.id || jaqlJson.datasource.fullname
+
+    const hierarchy = jaqlJson.metadata.reduce((res, curr)=>{
+      if (curr && curr.field){
+        res[curr.field.index] =
+        Object.assign({}, curr.field,
+          {name:curr.jaql.title, type:curr.panel}
+        )
+      }
+
+      return res
+    },[])
 
     return {
       baseUrl,
       fullToken,
       parsedJaql,
       datasource,
+      hierarchy,
     }
   },
 
@@ -64,17 +75,6 @@ export default {
       pivotData.push(row)
     })
 
-    const results = {
-      // TODO: hirarchy should be set only on first step?
-      hirarchy: Object.keys(chunks[0]).map((curr)=> {
-        return {
-          name: curr,
-          type: 'row',
-        }
-      }),
-      data: pivotData,
-    }
-
-    return results
+    return pivotData
   },
 }

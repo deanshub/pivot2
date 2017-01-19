@@ -25,9 +25,9 @@ const subscriber = result.subscribe((data) => {
     const pivotData = transformer.jaqlChunkToPivotData(data.chunks)
 
     self.postMessage({
+      type:'onChunks',
       pivotData,
       end: data.end,
-      type:'onChunks',
     })
   }
 })
