@@ -69,8 +69,8 @@ export default {
 
     chunks.forEach((chunk) => {
       row = []
-      for (let key in chunk) {
-        row.push(chunk[key])
+      for (let key in chunk.data) {
+        row.push(chunk.data[key])
       }
       pivotData.push(row)
     })

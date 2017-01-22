@@ -5,29 +5,24 @@ const socket = IO(`${location.protocol}//${location.host}`)
 import transformer from '../../store/transformer.js'
 
 let chunks = []
-let maxChunksLimit = 1
+let maxChunksLimit = 100
 
 let result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
-    if (chunks.length >= maxChunksLimit || data.end) {
-      subscriber.next({chunks, end: data.end})
-      chunks = []
-      if (!data.hasOwnProperty('end')) {
-        chunks.push(data)
-      }
-    } else {
-      chunks.push(data)
-    }
+    subscriber.next({data, end: data.end})
   })
 })
-const subscriber = result.subscribe((data) => {
-  if (data.chunks.length>0){
-    const pivotData = transformer.jaqlChunkToPivotData(data.chunks)
+const subscriber = result
+.filter(chunk=>!chunk.end)
+.bufferCount(maxChunksLimit)
+.subscribe((chunks) => {
+  if (chunks.length>0){
+    const pivotData = transformer.jaqlChunkToPivotData(chunks)
 
     self.postMessage({
       type:'onChunks',
       pivotData,
-      end: data.end,
+      end: chunks[chunks.length-1].end,
     })
   }
 })
