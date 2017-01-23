@@ -4,17 +4,32 @@ const socket = IO(`${location.protocol}//${location.host}`)
 
 import transformer from '../../store/transformer.js'
 
-let chunks = []
+//TODO: make this configurable
 let maxChunksLimit = 100
+let tempHierarchy
+let tempHeadersData= {
+  rows:{
+  },
+  cols:{
+  },
+}
 
-let result = Rx.Observable.create(function (subscriber) {
+const result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
     subscriber.next({data, end: data.end})
   })
 })
+
 const subscriber = result
 .filter(chunk=>!chunk.end)
-.bufferCount(maxChunksLimit)
+.do(row=>{
+  const rowPath = transformer.getRowPath(tempHierarchy, row.data)
+  const colPath = transformer.getColPath(tempHierarchy, row.data)
+  tempHeadersData = transformer.upsertRow(tempHeadersData, rowPath, row.data)
+  tempHeadersData = transformer.upsertCol(tempHeadersData, colPath, row.data)
+})
+// .bufferCount(maxChunksLimit)
+.bufferTime(maxChunksLimit)
 .subscribe((chunks) => {
   if (chunks.length>0){
     const pivotData = transformer.jaqlChunkToPivotData(chunks)
@@ -35,7 +50,8 @@ self.addEventListener('message', (e) => {
     const result = transformer.prepareQueryArgs({url, token, jaql, pageSize, pageNumber})
     self.postMessage({...result, type:'startQuery'})
   } else if (type==='startStreamRequest') {
-    const {baseUrl, fullToken, parsedJaql, datasource} = e.data
+    const {baseUrl, fullToken, parsedJaql, datasource, hierarchy} = e.data
+    tempHierarchy = hierarchy
     socket.emit('streamRequest', {
       jaql: parsedJaql,
       token: fullToken,

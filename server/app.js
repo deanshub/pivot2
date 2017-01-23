@@ -3,15 +3,19 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const app = express()
 const request = require('request')
-const csv = require('csv-stream')
+const CsvStream = require('csv-stream')
 const server = require('http').Server(app)
 const io = require('socket.io')(server)
 
 
+function cencelStream(client) {
+  client.cancelRequest = true
+}
+
 io.on('connection', function(client){
   console.log('connection')
   client.on('streamRequest', function(data) {
-    let csvStream = csv.createStream()
+    let csvStream = CsvStream.createStream()
 
     let jaql = data.jaql
     let token = data.token
@@ -32,7 +36,9 @@ io.on('connection', function(client){
       .on('data', function(data) {
         if (!client.cancelRequest) {
           // outputs an object containing a set of key/value pair representing a line found in the csv file.
-          client.emit('streamChunk', data)
+          // TODO: change csvStream to create the array automatically
+          const row = Object.keys(data).map(header=>data[header])
+          client.emit('streamChunk', row)
         }
 
       })
@@ -43,12 +49,11 @@ io.on('connection', function(client){
       })
   })
 
-  client.on('cancelStream', function() {
-    client.cancelRequest = true
-  })
+  client.on('cancelStream', ()=>cencelStream(client))
 
   client.on('disconnect', function() {
     console.log('disconnected')
+    cencelStream(client)
   })
 })
 

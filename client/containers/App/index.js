@@ -122,6 +122,7 @@ class App extends Component {
       fullToken,
       parsedJaql,
       datasource,
+      hierarchy,
     })
   }
 

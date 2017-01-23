@@ -77,4 +77,54 @@ export default {
 
     return pivotData
   },
+  getRowPath:(hierarchy, row)=>{
+    const rowHierarchyIndexes = hierarchy
+    .map((hierarchyPart,index)=>hierarchyPart.type==='rows'&&index)
+    .filter(hierarchyPart=>hierarchyPart!==false)
+
+    return rowHierarchyIndexes.map(rowIndex=>row[rowIndex])
+  },
+  getColPath:(hierarchy, row)=>{
+    const colHierarchyIndexes = hierarchy
+    .map((hierarchyPart,index)=>hierarchyPart.type==='columns'&&index)
+    .filter(hierarchyPart=>hierarchyPart!==false)
+
+    return colHierarchyIndexes.map(colIndex=>row[colIndex])
+  },
+  upsertRow:(headersData, rowPath, row)=>{
+    let part = headersData.rows
+    rowPath.forEach((pathPart, index, rowPath)=>{
+      if (index===rowPath.length-1){
+        if (part[pathPart]===undefined){
+          part[pathPart] = [row]
+        }else{
+          part[pathPart].push(row)
+        }
+      }else{
+        if (part[pathPart]===undefined){
+          part[pathPart] ={}
+        }
+      }
+      part = part[pathPart]
+    })
+    return headersData
+  },
+  upsertCol:(headersData, colPath, row)=>{
+    let part = headersData.cols
+    colPath.forEach((pathPart, index, colPath)=>{
+      if (index===colPath.length-1){
+        if (part[pathPart]===undefined){
+          part[pathPart] = [row]
+        }else{
+          part[pathPart].push(row)
+        }
+      }else{
+        if (part[pathPart]===undefined){
+          part[pathPart] ={}
+        }
+      }
+      part = part[pathPart]
+    })
+    return headersData
+  },
 }
