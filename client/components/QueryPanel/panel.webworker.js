@@ -16,7 +16,7 @@ let tempHeadersData= {
 
 const result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
-    subscriber.next({data, end: data.end})
+    subscriber.next({data: data.row, end: data.end})
   })
 })
 
@@ -37,6 +37,7 @@ const subscriber = result
     self.postMessage({
       type:'onChunks',
       pivotData,
+      headersData: Object.assign({},tempHeadersData),
       end: chunks[chunks.length-1].end,
     })
   }

@@ -12,10 +12,17 @@ function cencelStream(client) {
   client.cancelRequest = true
 }
 
+const options = {
+  delimiter : ',', // default is ,
+  endLine : '\n', // default is \n,
+  escapeChar : '"', // default is an empty string
+  enclosedChar : '"', // default is an empty string
+}
+
 io.on('connection', function(client){
   console.log('connection')
   client.on('streamRequest', function(data) {
-    let csvStream = CsvStream.createStream()
+    let csvStream = CsvStream.createStream(options)
 
     let jaql = data.jaql
     let token = data.token
@@ -29,7 +36,8 @@ io.on('connection', function(client){
       headers: {
         'Authorization': token,
       },
-    }).pipe(csvStream)
+    })
+    .pipe(csvStream)
       .on('error', function(err) {
         console.error(err)
       })
@@ -38,7 +46,7 @@ io.on('connection', function(client){
           // outputs an object containing a set of key/value pair representing a line found in the csv file.
           // TODO: change csvStream to create the array automatically
           const row = Object.keys(data).map(header=>data[header])
-          client.emit('streamChunk', row)
+          client.emit('streamChunk', {row})
         }
 
       })

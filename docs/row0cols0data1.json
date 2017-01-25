@@ -1,0 +1,41 @@
+{
+  "datasource": {
+    "title": "Sample ECommerce",
+    "id": "aLOCALHOST_aSAMPLEIAAaECOMMERCE",
+    "address": "LocalHost",
+    "database": "aSampleIAAaECommerce"
+  },
+  "format": "csv",
+  "count": 0,
+  "offset": 0,
+  "grandTotals": {},
+  "metadata": [
+    {
+      "jaql": {
+        "table": "Commerce",
+        "column": "Revenue",
+        "dim": "[Commerce.Revenue]",
+        "datatype": "numeric",
+        "agg": "sum",
+        "title": "Total Revenue"
+      },
+      "field": {
+        "id": "[Commerce.Revenue]_sum",
+        "index": 2
+      },
+      "disabled": false,
+      "panel": "measures",
+      "handlers": [
+        {},
+        {}
+      ]
+    }
+  ],
+  "isMaskedResult": true,
+  "isMaskedResponse": true,
+  "filename": "widget.csv",
+  "download": true,
+  "widget": "58886bee99ae87842400002b;",
+  "dashboard": "58886bba99ae878424000027;Sample ECommerce",
+  "culture": "en-US"
+}

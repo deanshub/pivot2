@@ -99,7 +99,7 @@ class App extends Component {
     if (type==='startQuery'){
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamStopped){
-      this.onChunks(restData.pivotData, restData.end)
+      this.onChunks(restData.pivotData, restData.headersData, restData.end)
     }
   }
 
@@ -126,11 +126,12 @@ class App extends Component {
     })
   }
 
-  onChunks(chunks, end){
+  onChunks(chunks, headersData, end){
     const { data } = this.state
 
     this.setState({
       data: [...data , ...chunks],
+      headersData,
     })
 
     this.loadingNextPage = false
@@ -199,7 +200,7 @@ class App extends Component {
   }
 
   render() {
-    const { data, hierarchy } = this.state
+    const { data, headersData, hierarchy } = this.state
 
     return (
       <div
@@ -214,6 +215,7 @@ class App extends Component {
         />
         <PivotView
             data={data}
+            headersData={headersData}
             hierarchy={hierarchy}
             loadNextPage ={::this.loadNextPage}
         />

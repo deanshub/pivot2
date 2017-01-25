@@ -1,0 +1,112 @@
+{
+  "datasource": {
+    "title": "Sample ECommerce",
+    "id": "aLOCALHOST_aSAMPLEIAAaECOMMERCE",
+    "address": "LocalHost",
+    "database": "aSampleIAAaECommerce"
+  },
+  "format": "csv",
+  "count": 0,
+  "offset": 0,
+  "grandTotals": {},
+  "metadata": [
+    {
+      "jaql": {
+        "table": "category",
+        "column": "Category ID",
+        "dim": "[category.Category ID]",
+        "datatype": "numeric",
+        "merged": true,
+        "title": "Category ID"
+      },
+      "field": {
+        "id": "[category.Category ID]",
+        "index": 0
+      },
+      "disabled": false,
+      "panel": "rows",
+      "handlers": []
+    },
+    {
+      "jaql": {
+        "table": "country",
+        "column": "Country",
+        "dim": "[country.Country]",
+        "datatype": "text",
+        "merged": true,
+        "title": "Country",
+        "sortDetails": {
+          "field": 1,
+          "dir": "asc",
+          "sortingLastDimension": true,
+          "measurePath": null,
+          "initialized": true
+        },
+        "sort": "asc"
+      },
+      "field": {
+        "id": "[country.Country]",
+        "index": 1
+      },
+      "disabled": false,
+      "panel": "rows",
+      "handlers": []
+    },
+    {
+      "jaql": {
+        "dim": "[country.Country]",
+        "datatype": "text",
+        "filter": {
+          "explicit": false,
+          "multiSelection": true,
+          "all": true
+        },
+        "title": "COUNTRY",
+        "collapsed": false
+      },
+      "isCascading": false,
+      "panel": "scope"
+    },
+    {
+      "jaql": {
+        "dim": "[Commerce.Date (Calendar)]",
+        "datatype": "datetime",
+        "level": "Years",
+        "title": "YEARS",
+        "collapsed": false,
+        "filter": {
+          "explicit": true,
+          "multiSelection": true,
+          "members": [
+            "2013-01-01T00:00:00",
+            "2012-01-01T00:00:00",
+            "2011-01-01T00:00:00"
+          ]
+        }
+      },
+      "disabled": false,
+      "isCascading": false,
+      "panel": "scope"
+    },
+    {
+      "jaql": {
+        "dim": "[Commerce.Revenue]",
+        "datatype": "numeric",
+        "filter": {
+          "fromNotEqual": 0
+        },
+        "title": "SALES REVENUE RANGE",
+        "collapsed": false
+      },
+      "isCascading": false,
+      "panel": "scope"
+    }
+  ],
+  "isMaskedResult": true,
+  "isMaskedResponse": true,
+  "filename": "widget.csv",
+  "download": true,
+  "widget": "587e389999ae878424000013;",
+  "dashboard": "55376eb86227a50840000016;Sample - Ecommerce",
+  "culture": "en-US"
+}

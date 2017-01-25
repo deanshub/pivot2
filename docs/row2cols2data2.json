@@ -1,0 +1,141 @@
+{
+  "datasource": {
+    "title": "Sample ECommerce",
+    "id": "aLOCALHOST_aSAMPLEIAAaECOMMERCE",
+    "address": "LocalHost",
+    "database": "aSampleIAAaECommerce"
+  },
+  "format": "csv",
+  "count": 0,
+  "offset": 0,
+  "grandTotals": {},
+  "metadata": [
+    {
+      "jaql": {
+        "table": "category",
+        "column": "Category ID",
+        "dim": "[category.Category ID]",
+        "datatype": "numeric",
+        "merged": true,
+        "title": "Category ID"
+      },
+      "field": {
+        "id": "[category.Category ID]",
+        "index": 0
+      },
+      "panel": "rows",
+      "handlers": []
+    },
+    {
+      "jaql": {
+        "table": "country",
+        "column": "Country",
+        "dim": "[country.Country]",
+        "datatype": "text",
+        "merged": true,
+        "title": "Country"
+      },
+      "field": {
+        "id": "[country.Country]",
+        "index": 1
+      },
+      "panel": "rows",
+      "handlers": []
+    },
+    {
+      "jaql": {
+        "table": "Commerce",
+        "column": "Age Range",
+        "dim": "[Commerce.Age Range]",
+        "datatype": "text",
+        "merged": true,
+        "title": "Age Range"
+      },
+      "field": {
+        "id": "[Commerce.Age Range]",
+        "index": 2
+      },
+      "panel": "columns",
+      "handlers": []
+    },
+    {
+      "jaql": {
+        "table": "Commerce",
+        "column": "Condition",
+        "dim": "[Commerce.Condition]",
+        "datatype": "text",
+        "merged": true,
+        "title": "Condition"
+      },
+      "field": {
+        "id": "[Commerce.Condition]",
+        "index": 3
+      },
+      "panel": "columns",
+      "handlers": []
+    },
+    {
+      "jaql": {
+        "table": "Commerce",
+        "column": "Cost",
+        "dim": "[Commerce.Cost]",
+        "datatype": "numeric",
+        "agg": "sum",
+        "title": "Total Cost"
+      },
+      "field": {
+        "id": "[Commerce.Cost]_sum",
+        "index": 4
+      },
+      "panel": "measures",
+      "handlers": [
+        {},
+        {}
+      ]
+    },
+    {
+      "jaql": {
+        "table": "Commerce",
+        "column": "Revenue",
+        "dim": "[Commerce.Revenue]",
+        "datatype": "numeric",
+        "agg": "sum",
+        "title": "Total Revenue"
+      },
+      "field": {
+        "id": "[Commerce.Revenue]_sum",
+        "index": 5
+      },
+      "panel": "measures",
+      "handlers": [
+        {},
+        {}
+      ]
+    },
+    {
+      "jaql": {
+        "table": "yo",
+        "column": "a",
+        "dim": "[yo.a]",
+        "datatype": "text",
+        "merged": true,
+        "title": "a",
+        "filter": {
+          "explicit": false,
+          "multiSelection": true,
+          "all": true
+        },
+        "collapsed": false
+      },
+      "panel": "scope",
+      "handlers": []
+    }
+  ],
+  "isMaskedResult": true,
+  "isMaskedResponse": true,
+  "filename": "widget.csv",
+  "download": true,
+  "widget": "587e389999ae878424000013;",
+  "dashboard": "55376eb86227a50840000016;Sample - Ecommerce",
+  "culture": "en-US"
+}

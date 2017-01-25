@@ -1,3 +1,5 @@
+import {LEAF_CHILDREN_COUNT_SYM} from '../constants/symbols'
+
 export default {
   jaqlresultToPivot: jaql => {
     const hirarchy = jaql.metadata.reduce((res, curr)=>{
@@ -79,20 +81,31 @@ export default {
   },
   getRowPath:(hierarchy, row)=>{
     const rowHierarchyIndexes = hierarchy
-    .map((hierarchyPart,index)=>hierarchyPart.type==='rows'&&index)
-    .filter(hierarchyPart=>hierarchyPart!==false)
+    .map((hierarchyPart,index)=>{
+      if (hierarchyPart.type==='rows'){
+        return index
+      }else{
+        return null
+      }
+    }).filter(hierarchyPart=>hierarchyPart!==null)
 
     return rowHierarchyIndexes.map(rowIndex=>row[rowIndex])
   },
   getColPath:(hierarchy, row)=>{
     const colHierarchyIndexes = hierarchy
-    .map((hierarchyPart,index)=>hierarchyPart.type==='columns'&&index)
-    .filter(hierarchyPart=>hierarchyPart!==false)
+    .map((hierarchyPart,index)=>{
+      if (hierarchyPart.type==='columns'){
+        return index
+      }else{
+        return null
+      }
+    }).filter(hierarchyPart=>hierarchyPart!==null)
 
     return colHierarchyIndexes.map(colIndex=>row[colIndex])
   },
   upsertRow:(headersData, rowPath, row)=>{
     let part = headersData.rows
+
     rowPath.forEach((pathPart, index, rowPath)=>{
       if (index===rowPath.length-1){
         if (part[pathPart]===undefined){
@@ -105,15 +118,19 @@ export default {
           part[pathPart] ={}
         }
       }
+
       part = part[pathPart]
     })
     return headersData
   },
   upsertCol:(headersData, colPath, row)=>{
     let part = headersData.cols
+    let updateLeafCount = false
+
     colPath.forEach((pathPart, index, colPath)=>{
       if (index===colPath.length-1){
         if (part[pathPart]===undefined){
+          updateLeafCount = true
           part[pathPart] = [row]
         }else{
           part[pathPart].push(row)
@@ -125,6 +142,19 @@ export default {
       }
       part = part[pathPart]
     })
+
+    if (updateLeafCount){
+      part = headersData.cols
+      colPath.forEach((pathPart)=>{
+        if (part[pathPart][LEAF_CHILDREN_COUNT_SYM]===undefined){
+          part[pathPart][LEAF_CHILDREN_COUNT_SYM]=1
+        }else{
+          part[pathPart][LEAF_CHILDREN_COUNT_SYM]++
+        }
+        part = part[pathPart]
+      })
+    }
+
     return headersData
   },
 }
