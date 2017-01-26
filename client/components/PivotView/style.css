@@ -5,12 +5,5 @@
 
 .pivotTable {
   width: 100%;
-}
-
-.pivotHeaders {
-  text-align: left;
-}
-
-.th{
-  border: 1px solid #dfdfdf;
+  border-collapse: collapse;
 }

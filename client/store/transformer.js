@@ -105,10 +105,12 @@ export default {
   },
   upsertRow:(headersData, rowPath, row)=>{
     let part = headersData.rows
+    let updateLeafCount = false
 
     rowPath.forEach((pathPart, index, rowPath)=>{
       if (index===rowPath.length-1){
         if (part[pathPart]===undefined){
+          updateLeafCount = true
           part[pathPart] = [row]
         }else{
           part[pathPart].push(row)
@@ -121,6 +123,19 @@ export default {
 
       part = part[pathPart]
     })
+
+    if (updateLeafCount){
+      part = headersData.rows
+      rowPath.forEach((pathPart)=>{
+        if (part[pathPart][LEAF_CHILDREN_COUNT_SYM]===undefined){
+          part[pathPart][LEAF_CHILDREN_COUNT_SYM]=1
+        }else{
+          part[pathPart][LEAF_CHILDREN_COUNT_SYM]++
+        }
+        part = part[pathPart]
+      })
+    }
+
     return headersData
   },
   upsertCol:(headersData, colPath, row)=>{
