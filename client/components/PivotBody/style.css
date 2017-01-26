@@ -4,3 +4,19 @@
 .row{
 
 }
+
+.evenRow {
+  background-color: #f5f5f5;
+}
+
+.sectionCol{
+  border-right: 1px solid #afafaf;
+}
+
+.normalCol{
+  border-right: 1px solid #f5f5f5;
+}
+
+.cell {
+  padding: 3px;
+}
