@@ -172,4 +172,52 @@ export default {
 
     return headersData
   },
+
+  getColPosition(hierarchy, headerColData, rowData){
+    const colsPath = rowData.filter((curr,index)=>
+      hierarchy[index].type==='columns'
+    )
+    let headerColDataPart = headerColData
+    let colIndex = 0
+    let colsPathIndex = 0
+
+    while (colsPathIndex<colsPath.length){
+      let colsPathPart = colsPath[colsPathIndex]
+      const colPathPartPosition = Object.keys(headerColDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).indexOf(colsPathPart)
+      const soFarColsKeys = Object.keys(headerColDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).filter((name, index)=>index<=colPathPartPosition)
+      soFarColsKeys.forEach((colKey, index, soFarColsKeys)=>{
+        if (index!==soFarColsKeys.length-1){
+          colIndex += headerColDataPart[colKey][LEAF_CHILDREN_COUNT_SYM]
+        }else{
+          colsPathIndex++
+          headerColDataPart = headerColDataPart[colKey]
+        }
+      })
+    }
+    return colIndex
+  },
+
+  getRowPosition(hierarchy, headerRowData, rowData){
+    const rowsPath = rowData.filter((curr,index)=>
+      hierarchy[index].type==='rows'
+    )
+    let headerRowDataPart = headerRowData
+    let rowIndex = 0
+    let rowsPathIndex = 0
+
+    while (rowsPathIndex<rowsPath.length){
+      let rowsPathPart = rowsPath[rowsPathIndex]
+      const rowPathPartPosition = Object.keys(headerRowDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).indexOf(rowsPathPart)
+      const soFarRowsKeys = Object.keys(headerRowDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).filter((name, index)=>index<=rowPathPartPosition)
+      soFarRowsKeys.forEach((rowKey, index, soFarRowsKeys)=>{
+        if (index!==soFarRowsKeys.length-1){
+          rowIndex += headerRowDataPart[rowKey][LEAF_CHILDREN_COUNT_SYM]
+        }else{
+          rowsPathIndex++
+          headerRowDataPart = headerRowDataPart[rowKey]
+        }
+      })
+    }
+    return rowIndex
+  },
 }

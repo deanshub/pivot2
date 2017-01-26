@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
 import {LEAF_CHILDREN_COUNT_SYM} from '../../constants/symbols'
-
+// TODO: remove this from here, should only be in the webworker
+import transformer from '../../store/transformer'
 
 export default class PivotBody extends Component {
   static propTypes = {
@@ -15,14 +16,12 @@ export default class PivotBody extends Component {
     console.log(headersData);
     if (headersData && headersData.rows){
       let headersPart = headersData.rows
-      const hierarchyData = hierarchy.map((header, index)=>header.type==='measures'&&index)
-      .filter(header=>header!==false)
 
-      return this.buildTrs(headersPart, hierarchyData).map(tr=><tr>{tr}</tr>)
+      return this.buildTrs(headersPart, hierarchy, headersData).map(tr=><tr>{tr}</tr>)
     }
   }
 
-  buildTrs(headersDataPart, hierarchyData){
+  buildTrs(headersDataPart, hierarchy, headersData){
     const sectionTrs = Object.keys(headersDataPart)
     .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
     .map(rowName=>{
@@ -30,10 +29,10 @@ export default class PivotBody extends Component {
 
     }).reduce((res,cur)=>res.concat(cur))
 
-    return this.builTds([headersDataPart], hierarchyData, sectionTrs)
+    return this.builTds([headersDataPart], hierarchy, headersData, sectionTrs)
   }
 
-  builTds(headersDataParts, hierarchyData, trs){
+  builTds(headersDataParts, hierarchy, headersData, trs){
     while (!Array.isArray(headersDataParts[0])){
       let currIndex = 0
       headersDataParts.forEach((headersDataPart) => {
@@ -52,6 +51,9 @@ export default class PivotBody extends Component {
         }).reduce((res,cur)=>res.concat(cur), [])
       }).reduce((res,cur)=>res.concat(cur), [])
     }
+
+    console.log(headersDataParts[6], transformer.getColPosition(hierarchy, headersData.cols, headersDataParts[6]));
+    console.log(headersDataParts[6], transformer.getRowPosition(hierarchy, headersData.rows, headersDataParts[6]));
 
     return trs
   }
