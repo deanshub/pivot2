@@ -7,7 +7,7 @@ import PivotBody from '../PivotBody'
 
 export default class PivotView extends Component {
   static propTypes = {
-    data: PropTypes.array,
+    bodyMatrix: PropTypes.array,
     hierarchy: PropTypes.array,
     headersData: PropTypes.object,
   }
@@ -28,7 +28,7 @@ export default class PivotView extends Component {
   }
 
   render() {
-    const {data, headersData, hierarchy} = this.props
+    const {headersData, hierarchy, bodyMatrix} = this.props
 
     return (
       <div
@@ -39,7 +39,7 @@ export default class PivotView extends Component {
             ref={container=>this.container=container}
         >
           <PivotHead headersData={headersData} hierarchy={hierarchy} />
-          <PivotBody headersData={headersData} hierarchy={hierarchy}/>
+          <PivotBody headersData={headersData} hierarchy={hierarchy} bodyMatrix={bodyMatrix}/>
         </table>
       </div>
     )

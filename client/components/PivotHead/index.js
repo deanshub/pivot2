@@ -9,6 +9,9 @@ export default class PivotHead extends Component {
     hierarchy: PropTypes.array,
     headersData: PropTypes.object,
   }
+  static defaultProps = {
+    hierarchy : [],
+  }
 
   buildTrsForColumns(colsData, hierarchyCols, hierarchyRows, dataTh, colspan){
     let trs=[]

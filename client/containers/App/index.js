@@ -78,12 +78,9 @@ class App extends Component {
   constructor(props, context) {
     super(props, context)
 
-    this.panelWorker = new PanelWorker()
-    this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
-
     this.state = {
-      hierarchy:generatedDataHirarchy,
-      data:convertedGeneratedData,
+      // hierarchy:generatedDataHirarchy,
+      // data:convertedGeneratedData,
     }
 
     this.loadingNextPage = false
@@ -94,12 +91,17 @@ class App extends Component {
     }
   }
 
+  componentDidMount(){
+    this.panelWorker = new PanelWorker()
+    this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
+  }
+
   handleWebworkerMessage({data}){
     const { type, ...restData } = data
     if (type==='startQuery'){
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamStopped){
-      this.onChunks(restData.pivotData, restData.headersData, restData.end)
+      this.onChunks(restData.bodyMatrix, restData.headersData, restData.end)
     }
   }
 
@@ -126,12 +128,13 @@ class App extends Component {
     })
   }
 
-  onChunks(chunks, headersData, end){
-    const { data } = this.state
+  onChunks(bodyMatrix, headersData, end){
+    // const { data } = this.state
 
     this.setState({
-      data: [...data , ...chunks],
+      // data: [...data , ...chunks],
       headersData,
+      bodyMatrix,
     })
 
     this.loadingNextPage = false
@@ -200,7 +203,7 @@ class App extends Component {
   }
 
   render() {
-    const { data, headersData, hierarchy } = this.state
+    const { headersData, hierarchy, bodyMatrix } = this.state
 
     return (
       <div
@@ -214,13 +217,13 @@ class App extends Component {
             stopStream={::this.stopStream}
         />
         <PivotView
-            data={data}
+            bodyMatrix={bodyMatrix}
             headersData={headersData}
             hierarchy={hierarchy}
             loadNextPage ={::this.loadNextPage}
         />
         <Pager
-          currentPage={this.streamMetaData.pageNumber}
+            currentPage={this.streamMetaData.pageNumber}
         />
       </div>
     )

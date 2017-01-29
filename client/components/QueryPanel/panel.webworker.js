@@ -13,6 +13,7 @@ let tempHeadersData= {
   cols:{
   },
 }
+let bodyMatrix = []
 
 const result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
@@ -32,11 +33,13 @@ const subscriber = result
 .bufferTime(maxChunksLimit)
 .subscribe((chunks) => {
   if (chunks.length>0){
-    const pivotData = transformer.jaqlChunkToPivotData(chunks)
+    // const pivotData = transformer.jaqlChunkToPivotData(chunks)
+    bodyMatrix = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
 
     self.postMessage({
+      // pivotData,
       type:'onChunks',
-      pivotData,
+      bodyMatrix,
       headersData: Object.assign({},tempHeadersData),
       end: chunks[chunks.length-1].end,
     })
