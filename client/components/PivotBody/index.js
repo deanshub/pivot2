@@ -5,8 +5,6 @@ import style from './style.css'
 export default class PivotBody extends Component {
   static propTypes = {
     bodyMatrix: PropTypes.array,
-    hierarchy: PropTypes.array,
-    headersData: PropTypes.object,
   }
   static defaultProps = {
     bodyMatrix: [],

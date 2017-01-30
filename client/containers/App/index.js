@@ -101,7 +101,7 @@ class App extends Component {
     if (type==='startQuery'){
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamStopped){
-      this.onChunks(restData.bodyMatrix, restData.headersData, restData.end)
+      this.onChunks(restData.bodyMatrix, restData.headMatrix, restData.end)
     }
   }
 
@@ -128,13 +128,10 @@ class App extends Component {
     })
   }
 
-  onChunks(bodyMatrix, headersData, end){
-    // const { data } = this.state
-
+  onChunks(bodyMatrix, headMatrix, end){
     this.setState({
-      // data: [...data , ...chunks],
-      headersData,
       bodyMatrix,
+      headMatrix,
     })
 
     this.loadingNextPage = false
@@ -203,7 +200,7 @@ class App extends Component {
   }
 
   render() {
-    const { headersData, hierarchy, bodyMatrix } = this.state
+    const { headMatrix, bodyMatrix } = this.state
 
     return (
       <div
@@ -218,8 +215,7 @@ class App extends Component {
         />
         <PivotView
             bodyMatrix={bodyMatrix}
-            headersData={headersData}
-            hierarchy={hierarchy}
+            headMatrix={headMatrix}
             loadNextPage ={::this.loadNextPage}
         />
         <Pager

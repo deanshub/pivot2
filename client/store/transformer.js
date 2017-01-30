@@ -65,20 +65,6 @@ export default {
     }
   },
 
-  // jaqlChunkToPivotData: chunks=>{
-  //   let pivotData =[]
-  //   let row
-  //
-  //   chunks.forEach((chunk) => {
-  //     row = []
-  //     for (let key in chunk.data) {
-  //       row.push(chunk.data[key])
-  //     }
-  //     pivotData.push(row)
-  //   })
-  //
-  //   return pivotData
-  // },
   getRowPath:(hierarchy, row)=>{
     const rowHierarchyIndexes = hierarchy
     .map((hierarchyPart,index)=>{
@@ -179,8 +165,107 @@ export default {
 
       return buildTrs(headersPart, hierarchy, headersData)
     }
-  }
+  },
+
+  headersDataToHeadMatrix: (headersData, hierarchy)=>{
+    const hierarchyData = hierarchy.filter(header=>header.type==='measures')
+    const hierarchyRows = hierarchy.filter(header=>header.type==='rows')
+    const hierarchyCols = hierarchy.filter(header=>header.type==='columns')
+    const dataHeaders = buildDataHeaders(hierarchyData)
+    const rowsHeaders = buildRowsHeaders(hierarchyRows)
+    const colsHeaders = buildColsHeaders(headersData.cols)
+
+    return consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, {
+      hierarchyData,
+      hierarchyRows,
+      hierarchyCols,
+    })
+  },
 }
+
+function buildDataHeaders(hierarchyData=[]){
+  return hierarchyData.map(hierarchyDataPart=>{
+    return {
+      colspan: 1,
+      displayValue: hierarchyDataPart.name,
+    }
+  })
+}
+
+function buildRowsHeaders(hierarchyRows=[]){
+  return hierarchyRows.map(hierarchyRow=>{
+    return {
+      displayValue: hierarchyRow.name,
+    }
+  })
+}
+
+function buildColsHeaders(colsHeadersData){
+  let colsMatrix = []
+  let currLayerParts = [colsHeadersData]
+  while (!Array.isArray(currLayerParts[0])){
+    let nextLayer = []
+    const layer = currLayerParts.map(currLayerPart=>{
+      return Object.keys(currLayerPart)
+        .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
+        .map(partName=>{
+          nextLayer.push(currLayerPart[partName])
+          return {
+            displayValue: partName,
+            [LEAF_CHILDREN_COUNT_SYM]: currLayerPart[partName][LEAF_CHILDREN_COUNT_SYM],
+          }
+        }).reduce((res,cur)=>res.concat(cur),[])
+    }).reduce((res,cur)=>res.concat(cur),[])
+
+    colsMatrix.push(layer)
+    currLayerParts = nextLayer
+  }
+  return colsMatrix
+}
+
+function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
+  const rowsExists = hierarchies.hierarchyRows.length>0
+  const colsExists = hierarchies.hierarchyCols.length>0
+  const dataExists = hierarchies.hierarchyData.length>1
+
+  let headerMatrix = []
+
+  if (!rowsExists && !colsExists && !dataExists){
+    // TODO: take care of 1 data
+  }else if(colsExists && dataExists){
+    // hierarchyCols.length + 1
+    const rowsHeadersWithRowspan = rowsHeaders
+      .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
+    const colsHeadersWithColspan = colsHeaders.map(colLayer=>{
+      return colLayer.map(colHeader=>{
+        return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*dataHeaders.length})
+      })
+    })
+
+    headerMatrix = Array.from(Array(colsHeadersWithColspan.length + 1)).map(()=> {
+      return []
+    })
+
+    headerMatrix[0] = headerMatrix[0].concat(rowsHeadersWithRowspan)
+
+    colsHeadersWithColspan.forEach((currRow, index) => {
+      headerMatrix[index] = headerMatrix[index].concat(currRow)
+    })
+
+
+    colsHeadersWithColspan[colsHeadersWithColspan.length - 1].forEach(() => {
+      headerMatrix[headerMatrix.length-1] = headerMatrix[headerMatrix.length-1].concat(dataHeaders)
+    })
+  }else if(rowsExists && !colsExists && !dataExists){
+    // 1
+  }else if(colsExists || dataExists){
+    // hierarchyCols.length || 1
+  }
+
+  return headerMatrix
+}
+
+
 
 
 function getColPosition(hierarchy, headerColData, rowData){
@@ -236,7 +321,6 @@ function buildTrs(headersDataPart, hierarchy, headersData){
   .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
   .map(rowName=>{
     return Array.from(Array(headersDataPart[rowName][LEAF_CHILDREN_COUNT_SYM])).map(()=>[])
-
   }).reduce((res,cur)=>res.concat(cur))
 
   return builTds([headersDataPart], hierarchy, headersData, sectionTrs)
