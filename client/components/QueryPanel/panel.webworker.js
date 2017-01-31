@@ -32,16 +32,13 @@ const subscriber = result
 .bufferTime(maxChunksLimit)
 .subscribe((chunks) => {
   if (chunks.length>0){
-    // const pivotData = transformer.jaqlChunkToPivotData(chunks)
-    const bodyMatrix = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
     const headMatrix = transformer.headersDataToHeadMatrix(tempHeadersData, tempHierarchy)
+    const bodyMatrix = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
 
     self.postMessage({
-      // pivotData,
       type:'onChunks',
       bodyMatrix,
       headMatrix,
-      // headersData: Object.assign({},tempHeadersData),
       end: chunks[chunks.length-1].end,
     })
   }

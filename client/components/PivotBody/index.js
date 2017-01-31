@@ -12,7 +12,6 @@ export default class PivotBody extends Component {
 
   render() {
     const {bodyMatrix}=this.props
-
     return (
       <tbody>
         {bodyMatrix.map((row, rowIndex)=>
@@ -23,7 +22,8 @@ export default class PivotBody extends Component {
                 rowSpan={col.rowspan}
             >
               {col.displayValue}
-            </td>)}
+            </td>
+          )}
           </tr>)}
       </tbody>
     )

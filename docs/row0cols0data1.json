@@ -21,7 +21,7 @@
       },
       "field": {
         "id": "[Commerce.Revenue]_sum",
-        "index": 2
+        "index": 0
       },
       "disabled": false,
       "panel": "measures",

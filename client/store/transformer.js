@@ -93,22 +93,30 @@ export default {
     let part = headersData.rows
     let updateLeafCount = false
 
-    rowPath.forEach((pathPart, index, rowPath)=>{
-      if (index===rowPath.length-1){
-        if (part[pathPart]===undefined){
-          updateLeafCount = true
-          part[pathPart] = [row]
+    if (rowPath.length>0){
+      rowPath.forEach((pathPart, index, rowPath)=>{
+        if (index===rowPath.length-1){
+          if (part[pathPart]===undefined){
+            updateLeafCount = true
+            part[pathPart] = [row]
+          }else{
+            part[pathPart].push(row)
+          }
         }else{
-          part[pathPart].push(row)
+          if (part[pathPart]===undefined){
+            part[pathPart] ={}
+          }
         }
-      }else{
-        if (part[pathPart]===undefined){
-          part[pathPart] ={}
-        }
-      }
 
-      part = part[pathPart]
-    })
+        part = part[pathPart]
+      })
+    }else{
+      if (Array.isArray(headersData.rows)){
+        headersData.rows.push(row)
+      }else{
+        headersData.rows = [row]
+      }
+    }
 
     if (updateLeafCount){
       part = headersData.rows
@@ -160,11 +168,12 @@ export default {
   },
 
   headersDataToBodyMatrix:(headersData, hierarchy)=>{
-    if (headersData && headersData.rows){
-      let headersPart = headersData.rows
-
-      return buildTrs(headersPart, hierarchy, headersData)
-    }
+    // Build body data rows headers
+    const bodyDataRowsHeaders = buildBodyDataRowsHeaders(headersData.rows)
+    // build body data
+    const bodyData = buildBodyData(headersData, hierarchy)
+    // consolidate body
+    return consolidateBody(bodyDataRowsHeaders, bodyData)
   },
 
   headersDataToHeadMatrix: (headersData, hierarchy)=>{
@@ -181,6 +190,96 @@ export default {
       hierarchyCols,
     })
   },
+}
+
+function buildBodyDataRowsHeaders(rowsHeadersData){
+  let rowsHeadersDataCurrLayers = [rowsHeadersData]
+  let rows=[]
+
+  if (Object.keys(rowsHeadersData).length>0){
+    while (!Array.isArray(rowsHeadersDataCurrLayers[0])){
+      let currIndex = 0
+      rowsHeadersDataCurrLayers.forEach((headersDataPart) => {
+        Object.keys(headersDataPart)
+        .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
+        .map(rowName=>{
+          if(rows[currIndex]===undefined){
+            rows[currIndex] = []
+          }
+          rows[currIndex].push({displayValue:rowName,rowspan:headersDataPart[rowName][LEAF_CHILDREN_COUNT_SYM]})
+
+          currIndex += headersDataPart[rowName][LEAF_CHILDREN_COUNT_SYM]
+        })
+      })
+
+      rowsHeadersDataCurrLayers = rowsHeadersDataCurrLayers.map(headerPart=>{
+        return Object.keys(headerPart).map(headerPartName=>{
+          return headerPart[headerPartName]
+        }).reduce((res,cur)=>res.concat(cur), [])
+      }).reduce((res,cur)=>res.concat(cur), [])
+    }
+  }
+
+  return rows
+}
+
+function buildBodyData(headersData, hierarchy){
+  let dataParts = [headersData.rows]
+  while (!Array.isArray(dataParts[0])){
+    dataParts = dataParts.map(headerPart=>{
+      return Object.keys(headerPart).map(headerPartName=>{
+        return headerPart[headerPartName]
+      }).reduce((res,cur)=>res.concat(cur), [])
+    }).reduce((res,cur)=>res.concat(cur), [])
+  }
+
+  // TODO: don't create the keys everytime
+  const matrixColsCount = Object.keys(headersData.cols).reduce((res, curr)=> {
+    return res + headersData.cols[curr][LEAF_CHILDREN_COUNT_SYM]
+  },0)
+
+  let matrixRowsCount = 1
+  if (!Array.isArray(headersData.rows)){
+    matrixRowsCount = Object.keys(headersData.rows).reduce((res, curr)=> {
+      return res + headersData.rows[curr][LEAF_CHILDREN_COUNT_SYM]
+    },0)
+  }
+
+  const measuresCount = hierarchy.filter((curr)=> {
+    return curr.type === 'measures'
+  }).length
+
+  let matrix = Array.from(Array(matrixRowsCount)).map(()=> {
+    return Array.from(Array(matrixColsCount * measuresCount)).map(()=>{return {}})
+  })
+
+  dataParts.forEach((currPart) => {
+    if (Array.isArray(currPart)) {
+      const rowPart = getRowPosition(hierarchy, headersData.rows, currPart)
+      const colPart = getColPosition(hierarchy, headersData.cols, currPart)
+
+      const measures = currPart.filter((curr,index)=> {
+        return hierarchy[index]&&hierarchy[index].type === 'measures'
+      })
+      measures.forEach((currMeasure, index) => {
+        matrix[rowPart][colPart*measures.length + index] = {
+          displayValue:currMeasure,
+        }
+      })
+    }
+  })
+
+  return matrix
+}
+
+function consolidateBody(bodyDataRowsHeaders, bodyData){
+  if (bodyDataRowsHeaders.length === 0) {
+    return bodyData
+  }
+
+  return bodyDataRowsHeaders.map((row, index)=>{
+    return row.concat(bodyData[index])
+  })
 }
 
 function buildDataHeaders(hierarchyData=[]){
@@ -202,11 +301,12 @@ function buildRowsHeaders(hierarchyRows=[]){
 
 function buildColsHeaders(colsHeadersData){
   let colsMatrix = []
-  let currLayerParts = [colsHeadersData]
-  while (!Array.isArray(currLayerParts[0])){
-    let nextLayer = []
-    const layer = currLayerParts.map(currLayerPart=>{
-      return Object.keys(currLayerPart)
+  if (Object.keys(colsHeadersData).length>0){
+    let currLayerParts = [colsHeadersData]
+    while (!Array.isArray(currLayerParts[0])){
+      let nextLayer = []
+      const layer = currLayerParts.map(currLayerPart=>{
+        return Object.keys(currLayerPart)
         .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
         .map(partName=>{
           nextLayer.push(currLayerPart[partName])
@@ -215,11 +315,13 @@ function buildColsHeaders(colsHeadersData){
             [LEAF_CHILDREN_COUNT_SYM]: currLayerPart[partName][LEAF_CHILDREN_COUNT_SYM],
           }
         }).reduce((res,cur)=>res.concat(cur),[])
-    }).reduce((res,cur)=>res.concat(cur),[])
+      }).reduce((res,cur)=>res.concat(cur),[])
 
-    colsMatrix.push(layer)
-    currLayerParts = nextLayer
+      colsMatrix.push(layer)
+      currLayerParts = nextLayer
+    }
   }
+
   return colsMatrix
 }
 
@@ -229,37 +331,41 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
   const dataExists = hierarchies.hierarchyData.length>1
 
   let headerMatrix = []
+  let dataCellsAmountToAdd
+
+  const rowsHeadersWithRowspan = rowsHeaders
+  .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
+  const colsHeadersWithColspan = colsHeaders.map(colLayer=>{
+    return colLayer.map(colHeader=>{
+      return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*dataHeaders.length})
+    })
+  })
 
   if (!rowsExists && !colsExists && !dataExists){
     // TODO: take care of 1 data
+    headerMatrix = [[]]
+    dataCellsAmountToAdd = dataHeaders.length
   }else if(colsExists && dataExists){
     // hierarchyCols.length + 1
-    const rowsHeadersWithRowspan = rowsHeaders
-      .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
-    const colsHeadersWithColspan = colsHeaders.map(colLayer=>{
-      return colLayer.map(colHeader=>{
-        return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*dataHeaders.length})
-      })
-    })
-
     headerMatrix = Array.from(Array(colsHeadersWithColspan.length + 1)).map(()=> {
       return []
     })
 
-    headerMatrix[0] = headerMatrix[0].concat(rowsHeadersWithRowspan)
-
-    colsHeadersWithColspan.forEach((currRow, index) => {
-      headerMatrix[index] = headerMatrix[index].concat(currRow)
-    })
-
-
-    colsHeadersWithColspan[colsHeadersWithColspan.length - 1].forEach(() => {
-      headerMatrix[headerMatrix.length-1] = headerMatrix[headerMatrix.length-1].concat(dataHeaders)
-    })
+    dataCellsAmountToAdd = colsHeadersWithColspan[colsHeadersWithColspan.length - 1].length
   }else if(rowsExists && !colsExists && !dataExists){
     // 1
   }else if(colsExists || dataExists){
     // hierarchyCols.length || 1
+  }
+
+  headerMatrix[0] = headerMatrix[0].concat(rowsHeadersWithRowspan)
+
+  colsHeadersWithColspan.forEach((currRow, index) => {
+    headerMatrix[index] = headerMatrix[index].concat(currRow)
+  })
+
+  for (let index = 0; index < dataCellsAmountToAdd; index++) {
+    headerMatrix[headerMatrix.length-1] = headerMatrix[headerMatrix.length-1].concat(dataHeaders)
   }
 
   return headerMatrix
@@ -268,9 +374,24 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function getColPosition(hierarchy, headerColData, rowData){
   const colsPath = rowData.filter((curr,index)=>
-    hierarchy[index].type==='columns'
+    hierarchy[index]&&hierarchy[index].type==='columns'
   )
   let headerColDataPart = headerColData
   let colIndex = 0
@@ -294,7 +415,7 @@ function getColPosition(hierarchy, headerColData, rowData){
 
 function getRowPosition(hierarchy, headerRowData, rowData){
   const rowsPath = rowData.filter((curr,index)=>
-    hierarchy[index].type==='rows'
+    hierarchy[index]&&hierarchy[index].type==='rows'
   )
   let headerRowDataPart = headerRowData
   let rowIndex = 0
@@ -314,91 +435,4 @@ function getRowPosition(hierarchy, headerRowData, rowData){
     })
   }
   return rowIndex
-}
-
-function buildTrs(headersDataPart, hierarchy, headersData){
-  const sectionTrs = Object.keys(headersDataPart)
-  .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
-  .map(rowName=>{
-    return Array.from(Array(headersDataPart[rowName][LEAF_CHILDREN_COUNT_SYM])).map(()=>[])
-  }).reduce((res,cur)=>res.concat(cur))
-
-  return builTds([headersDataPart], hierarchy, headersData, sectionTrs)
-}
-
-function builTds(headersDataParts, hierarchy, headersData, trs){
-  while (!Array.isArray(headersDataParts[0])){
-    let currIndex = 0
-    headersDataParts.forEach((headersDataPart) => {
-      Object.keys(headersDataPart)
-      .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
-      .map(rowName=>{
-        trs[currIndex].push({displayValue:rowName,rowspan:headersDataPart[rowName][LEAF_CHILDREN_COUNT_SYM]})
-
-        currIndex += headersDataPart[rowName][LEAF_CHILDREN_COUNT_SYM]
-      })
-    })
-
-    headersDataParts = headersDataParts.map(headerPart=>{
-      return Object.keys(headerPart).map(headerPartName=>{
-        return headerPart[headerPartName]
-      }).reduce((res,cur)=>res.concat(cur), [])
-    }).reduce((res,cur)=>res.concat(cur), [])
-  }
-
-  // TODO: don't create the keys everytime
-  const matrixColsCount = Object.keys(headersData.cols).reduce((res, curr)=> {
-    return res + headersData.cols[curr][LEAF_CHILDREN_COUNT_SYM]
-  },0)
-
-  const matrixRowsCount = Object.keys(headersData.rows).reduce((res, curr)=> {
-    return res + headersData.rows[curr][LEAF_CHILDREN_COUNT_SYM]
-  },0)
-
-  const measuresCount = hierarchy.filter((curr)=> {
-    return curr.type === 'measures'
-  }).length
-
-  let matrix = Array.from(Array(matrixRowsCount)).map(()=> {
-    return Array.from(Array(matrixColsCount * measuresCount))
-  })
-
-  headersDataParts.forEach((currPart) => {
-    if (Array.isArray(currPart)) {
-      const rowPart = getRowPosition(hierarchy, headersData.rows, currPart)
-      const colPart = getColPosition(hierarchy, headersData.cols, currPart)
-
-      const measures = currPart.filter((curr,index)=>
-        hierarchy[index].type === 'measures'
-      )
-
-      measures.forEach((currMeasure, index) => {
-        matrix[rowPart][colPart*measures.length + index] = currMeasure
-      })
-    }
-  })
-
-  trs = trs.map((currTr, index) => {
-    const dataTds = matrix[index].map(currRow => {
-      // let tdClassNames = []
-      //
-      // if (index % 2 === 0) {
-      //   tdClassNames.push(style.evenRow)
-      // }
-      //
-      // if ((index2 + 1) % measuresCount === 0) {
-      //   tdClassNames.push(style.sectionCol)
-      // } else {
-      //   tdClassNames.push(style.normalCol)
-      // }
-      //
-      // tdClassNames.push(style.cell)
-      return {displayValue:currRow ? parseFloat(currRow).toFixed(2) : currRow}
-      // return (<td className={classnames(tdClassNames)} key={index+'.'+index2}>{currRow ? parseFloat(currRow).toFixed(2) : currRow }</td>)
-    })
-    const newRow = currTr.concat(dataTds)
-    return newRow
-  })
-
-  return trs
 }
