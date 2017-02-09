@@ -201,7 +201,6 @@ function buildBodyDataRowsHeaders(rowsHeadersData){
       let currIndex = 0
       rowsHeadersDataCurrLayers.forEach((headersDataPart) => {
         Object.keys(headersDataPart)
-        .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
         .map(rowName=>{
           if(rows[currIndex]===undefined){
             rows[currIndex] = []
@@ -224,7 +223,7 @@ function buildBodyDataRowsHeaders(rowsHeadersData){
 }
 
 function buildBodyData(headersData, hierarchy){
-  let dataParts = [headersData.rows]
+  let dataParts = Array.isArray(headersData.rows) ? headersData.rows : [headersData.rows]
   while (!Array.isArray(dataParts[0])){
     dataParts = dataParts.map(headerPart=>{
       return Object.keys(headerPart).map(headerPartName=>{
@@ -247,7 +246,7 @@ function buildBodyData(headersData, hierarchy){
 
   const measuresCount = hierarchy.filter((curr)=> {
     return curr.type === 'measures'
-  }).length
+  }).length || 1
 
   let matrix = Array.from(Array(matrixRowsCount)).map(()=> {
     return Array.from(Array(matrixColsCount * measuresCount)).map(()=>{return {}})
@@ -307,7 +306,6 @@ function buildColsHeaders(colsHeadersData){
       let nextLayer = []
       const layer = currLayerParts.map(currLayerPart=>{
         return Object.keys(currLayerPart)
-        .filter(name=>name!==LEAF_CHILDREN_COUNT_SYM)
         .map(partName=>{
           nextLayer.push(currLayerPart[partName])
           return {
@@ -333,11 +331,13 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
   let headerMatrix = []
   let dataCellsAmountToAdd
 
+  const colspanMuliplier = dataHeaders.length || 1
+
   const rowsHeadersWithRowspan = rowsHeaders
-  .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
+    .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
   const colsHeadersWithColspan = colsHeaders.map(colLayer=>{
     return colLayer.map(colHeader=>{
-      return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*dataHeaders.length})
+      return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*colspanMuliplier})
     })
   })
 
@@ -353,8 +353,20 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
 
     dataCellsAmountToAdd = colsHeadersWithColspan[colsHeadersWithColspan.length - 1].length
   }else if(rowsExists && !colsExists && !dataExists){
+    headerMatrix = [[]]
+    dataCellsAmountToAdd = dataHeaders.length
     // 1
   }else if(colsExists || dataExists){
+    if (dataExists) {
+      headerMatrix = [[]]
+      dataCellsAmountToAdd = 1
+    } else {
+      headerMatrix = Array.from(Array(colsHeadersWithColspan.length)).map(()=> {
+        return []
+      })
+
+      dataCellsAmountToAdd = colsHeadersWithColspan[colsHeadersWithColspan.length - 1].length
+    }
     // hierarchyCols.length || 1
   }
 
@@ -399,8 +411,11 @@ function getColPosition(hierarchy, headerColData, rowData){
 
   while (colsPathIndex<colsPath.length){
     let colsPathPart = colsPath[colsPathIndex]
-    const colPathPartPosition = Object.keys(headerColDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).indexOf(colsPathPart)
-    const soFarColsKeys = Object.keys(headerColDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).filter((name, index)=>index<=colPathPartPosition)
+    const colPathPartPosition = Object.keys(headerColDataPart)
+      .indexOf(colsPathPart)
+
+    const soFarColsKeys = Object.keys(headerColDataPart)
+      .filter((name, index)=>index<=colPathPartPosition)
     soFarColsKeys.forEach((colKey, index, soFarColsKeys)=>{
       if (index!==soFarColsKeys.length-1){
         colIndex += headerColDataPart[colKey][LEAF_CHILDREN_COUNT_SYM]
@@ -423,8 +438,11 @@ function getRowPosition(hierarchy, headerRowData, rowData){
 
   while (rowsPathIndex<rowsPath.length){
     let rowsPathPart = rowsPath[rowsPathIndex]
-    const rowPathPartPosition = Object.keys(headerRowDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).indexOf(rowsPathPart)
-    const soFarRowsKeys = Object.keys(headerRowDataPart).filter(name=>name!==LEAF_CHILDREN_COUNT_SYM).filter((name, index)=>index<=rowPathPartPosition)
+    const rowPathPartPosition = Object.keys(headerRowDataPart)
+      .indexOf(rowsPathPart)
+
+    const soFarRowsKeys = Object.keys(headerRowDataPart)
+      .filter((name, index)=>index<=rowPathPartPosition)
     soFarRowsKeys.forEach((rowKey, index, soFarRowsKeys)=>{
       if (index!==soFarRowsKeys.length-1){
         rowIndex += headerRowDataPart[rowKey][LEAF_CHILDREN_COUNT_SYM]

@@ -7,80 +7,15 @@ import PivotView from '../../components/PivotView'
 import Pager from '../../components/Pager'
 import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
-// import * as BoardActions from '../../ducks/board'
-
-// import mockData from '../../store/data.mock'
 import TransformerWorker from '../../store/transformer.webworker'
 const transformer = new TransformerWorker()
-import * as generator from '../../store/generator'
 import PanelWorker from '../../components/QueryPanel/panel.webworker'
-
-const generatedDataHirarchy = [{
-  name:'date',
-  type:'row',
-},{
-  name:'id',
-  type:'row',
-},{
-  name:'region',
-  type:'col',
-},{
-  name:'country',
-  type:'col',
-},{
-  name:'city',
-  type:'col',
-},{
-  name:'amount',
-  type:'value',
-}]
-
-const generatedData = generator.generate([{
-  name: 'date',
-  type: 'date',
-  amount: 600,
-},{
-  name: 'id',
-  type: 'integer',
-  min: 1,
-  max: 9999999999999,
-},{
-  name: 'region',
-  type: 'string',
-  amount: 50,
-  length: 15,
-},{
-  name: 'country',
-  type: 'string',
-  amount: 200,
-  length: 30,
-},{
-  name: 'city',
-  type: 'string',
-  amount: 400,
-  length: 20,
-},{
-  name: 'amount',
-  type: 'integer',
-  min: 100,
-  max: 1000000,
-}], 1000)
-
-const convertedGeneratedData = generatedData.map(row=>{
-  let newRow = []
-  for(let prop in row){
-    newRow.push(row[prop])
-  }
-  return newRow
-})
 
 class App extends Component {
   constructor(props, context) {
     super(props, context)
 
     this.state = {
-      // hierarchy:generatedDataHirarchy,
-      // data:convertedGeneratedData,
     }
 
     this.loadingNextPage = false
@@ -102,6 +37,8 @@ class App extends Component {
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamStopped){
       this.onChunks(restData.bodyMatrix, restData.headMatrix, restData.end)
+    } else if (type === 'totalRowsNumber') {
+      this.getTotalRowsNumber(restData.totalRowsNumber)
     }
   }
 
@@ -135,6 +72,13 @@ class App extends Component {
     })
 
     this.loadingNextPage = false
+  }
+
+  getTotalRowsNumber(totalRowsNumber) {
+    totalRowsNumber = parseInt(totalRowsNumber)
+    this.setState({
+      totalRowsNumber,
+    })
   }
 
   getWholeResults(results) {
@@ -200,7 +144,13 @@ class App extends Component {
   }
 
   render() {
-    const { headMatrix, bodyMatrix } = this.state
+    const { headMatrix, bodyMatrix, totalRowsNumber } = this.state
+
+    let pageCount = 0
+
+    if (totalRowsNumber) {
+      pageCount = Math.ceil(totalRowsNumber / this.streamMetaData.pageSize)
+    }
 
     return (
       <div
@@ -220,6 +170,7 @@ class App extends Component {
         />
         <Pager
             currentPage={this.streamMetaData.pageNumber}
+            pageCount={pageCount}
         />
       </div>
     )

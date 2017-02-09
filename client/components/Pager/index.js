@@ -16,7 +16,7 @@ export default class Pager extends Component {
       <div className={classnames(style.container)}>
         <div>&lt;&lt;</div>
         <div>&lt;</div>
-        <div>{currentPage}</div>
+        <div>{currentPage} from {pageCount}</div>
         <div>&gt;</div>
         <div>&gt;&gt;</div>
       </div>

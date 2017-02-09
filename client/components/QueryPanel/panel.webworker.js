@@ -1,7 +1,6 @@
 import Rx from 'rxjs/Rx'
 import IO from 'socket.io-client'
 const socket = IO(`${location.protocol}//${location.host}`)
-
 import transformer from '../../store/transformer.js'
 
 //TODO: make this configurable
@@ -17,6 +16,13 @@ let tempHeadersData= {
 const result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
     subscriber.next({data: data.row, end: data.end})
+  })
+})
+
+socket.on('totalRowsNumber', (totalRowsNumber) => {
+  self.postMessage({
+    type:'totalRowsNumber',
+    totalRowsNumber,
   })
 })
 
