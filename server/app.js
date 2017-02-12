@@ -72,7 +72,7 @@ function generateJaqlContextAndFormula(res, curr, index, orig) {
 }
 
 function getTotalRowsNumber(jaqlQueryData, rowsGroups) {
-  const lastRowIndex = getLastRowIndexFromJalq(jaqlQueryData)
+  const lastRowIndex = getLastRowIndexFromJaql(jaqlQueryData)
 
   const totalRowsNumber = rowsGroups.reduce((res, curr, index, orig) => {
     if (index === 0 || orig[index - 1][lastRowIndex] !== curr[lastRowIndex]) {
@@ -85,7 +85,7 @@ function getTotalRowsNumber(jaqlQueryData, rowsGroups) {
   return totalRowsNumber
 }
 
-function getLastRowIndexFromJalq(jaqlQueryData) {
+function getLastRowIndexFromJaql(jaqlQueryData) {
   const rowsMetaData = getSpecificPanelFromJaql(jaqlQueryData, 'rows')
 
   let lastRowIndex = 0
@@ -100,7 +100,7 @@ function getLastRowIndexFromJalq(jaqlQueryData) {
 }
 
 function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
-  return jaqlQueryData.jaql.metadata.filter((currMeta) => {
+  return jaqlQueryData.metadata.filter((currMeta) => {
     return currMeta.panel === wantedPanel
   })
 }
@@ -109,7 +109,7 @@ function getPivotRowsGroups(jaqlHash, jaqlQueryData) {
   return new Promise((resolve) => {
     if (pivotMetaData[jaqlHash] === undefined) {
       return runQueryRowsGroups(jaqlQueryData).then((rowsGroups) => {
-        const totalRowsNumber = getTotalRowsNumber(jaqlQueryData, rowsGroups)
+        const totalRowsNumber = getTotalRowsNumber(jaqlQueryData.jaql, rowsGroups)
         pivotMetaData[jaqlHash] = {
           rowsGroups,
           totalRowsNumber,
