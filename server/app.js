@@ -172,6 +172,26 @@ function getJaqlHash(jaql) {
   return hash(jaqlToHash)
 }
 
+function calcNewOffsetByRows(offset, rowsGroups) {
+  let newOffset = 0
+
+  for (let rowGroupIndex = 0; rowGroupIndex < offset; rowGroupIndex++) {
+    newOffset = newOffset + rowsGroups[rowGroupIndex][rowsGroups[rowGroupIndex].length -1].data
+  }
+
+  return newOffset
+}
+
+function calcNewCountByRows(count, offset, rowsGroups) {
+  let newCount = 0
+
+  for (let rowGroupIndex = 0; rowGroupIndex < count; rowGroupIndex++) {
+    newCount = newCount + rowsGroups[offset + rowGroupIndex][rowsGroups[offset + rowGroupIndex].length -1].data
+  }
+
+  return newCount
+}
+
 const options = {
   delimiter : ',', // default is ,
   endLine : '\n', // default is \n,
@@ -209,43 +229,51 @@ io.on('connection', function(client){
 
     getPivotRowsGroups(jaqlHash, {jaql:jaqlJson,token,baseUrl,datasource}).then((pivotMetaData)=>{
       client.emit('totalRowsNumber', pivotMetaData.totalRowsNumber)
-    })
+      const newOffset = calcNewOffsetByRows(jaqlJson.offset, pivotMetaData.rowsGroups)
+      const newCount = calcNewCountByRows(jaqlJson.count, jaqlJson.offset, pivotMetaData.rowsGroups)
 
-    let lastRowValues = []
-    let rowCounter = 0
+      jaqlJson.offset = newOffset
+      jaqlJson.count = newCount
 
-    client.cancelRequest = false
-
-    const jaqlResultStream = fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
-      form: jaql,
-      headers: {
-        'Authorization': token,
-      },
-    }).pipe(csvStream))
+      client.cancelRequest = false
 
 
-    jaqlResultStream.map((data) => {
-      // outputs an object containing a set of key/value pair representing a line found in the csv file.
-      // TODO: change csvStream to create the array automatically
-      const row = Object.keys(data).map(header=>data[header])
+      const jaqlResultStream = fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
+        // form: jaql,
+        form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
+        headers: {
+          'Authorization': token,
+        },
+      }).pipe(csvStream))
 
-      let currRowValues = []
 
-      rowsHierarchy.forEach((currRow) => {
-        currRowValues.push(row[currRow.index])
+      jaqlResultStream.map((data) => {
+        // outputs an object containing a set of key/value pair representing a line found in the csv file.
+        // TODO: change csvStream to create the array automatically
+        const row = Object.keys(data).map(header=>data[header])
+
+        // let currRowValues = []
+        //
+        // rowsHierarchy.forEach((currRow) => {
+        //   currRowValues.push(row[currRow.index])
+        // })
+        //
+        // const sameRow = compareArrays(currRowValues, lastRowValues)
+        //
+        // if (!sameRow) {
+        //   lastRowValues = currRowValues
+        //   rowCounter++
+        // }
+
+        return row
+      }).subscribe((row) => {
+        client.emit('streamChunk', {row})
       })
-
-      const sameRow = compareArrays(currRowValues, lastRowValues)
-
-      if (!sameRow) {
-        lastRowValues = currRowValues
-        rowCounter++
-      }
-
-      return row
-    }).subscribe((row) => {
-      client.emit('streamChunk', {row})
     })
+
+    // let lastRowValues = []
+    // let rowCounter = 0
+
   })
 
   client.on('cancelStream', ()=>cancelStream(client))
