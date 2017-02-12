@@ -186,7 +186,9 @@ function calcNewCountByRows(count, offset, rowsGroups) {
   let newCount = 0
 
   for (let rowGroupIndex = 0; rowGroupIndex < count; rowGroupIndex++) {
-    newCount = newCount + rowsGroups[offset + rowGroupIndex][rowsGroups[offset + rowGroupIndex].length -1].data
+    if (offset + rowGroupIndex < rowsGroups.length) {
+      newCount = newCount + rowsGroups[offset + rowGroupIndex][rowsGroups[offset + rowGroupIndex].length -1].data
+    }
   }
 
   return newCount
@@ -237,7 +239,6 @@ io.on('connection', function(client){
 
       client.cancelRequest = false
 
-
       const jaqlResultStream = fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
         // form: jaql,
         form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
@@ -269,7 +270,7 @@ io.on('connection', function(client){
       }).subscribe((row) => {
         client.emit('streamChunk', {row})
       })
-    })
+    }).catch(console.log)
 
     // let lastRowValues = []
     // let rowCounter = 0
