@@ -305,7 +305,7 @@ function buildColsHeaders(colsHeadersData){
     while (!Array.isArray(currLayerParts[0])){
       let nextLayer = []
       const layer = currLayerParts.map(currLayerPart=>{
-        return Object.keys(currLayerPart)
+        return Object.keys(currLayerPart).sort()
         .map(partName=>{
           nextLayer.push(currLayerPart[partName])
           return {
@@ -383,24 +383,6 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
   return headerMatrix
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function getColPosition(hierarchy, headerColData, rowData){
   const colsPath = rowData.filter((curr,index)=>
     hierarchy[index]&&hierarchy[index].type==='columns'
@@ -411,7 +393,7 @@ function getColPosition(hierarchy, headerColData, rowData){
 
   while (colsPathIndex<colsPath.length){
     let colsPathPart = colsPath[colsPathIndex]
-    const colPathPartPosition = Object.keys(headerColDataPart)
+    const colPathPartPosition = Object.keys(headerColDataPart).sort()
       .indexOf(colsPathPart)
 
     const soFarColsKeys = Object.keys(headerColDataPart)
