@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "A boilerplate of things that shouldn't exist",
-  "main": "server/app.js",
+  "main": "client/containers/App",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "set NODE_ENV=development&&webpack-dev-server -d --history-api-fallback --hot --inline --progress --colors --port 6789",
     "webpack": "webpack -d --inline --progress --colors --watch",
-    "server": "nodemon",
+    "server": "nodemon server/app.js",
     "dev": "concurrently \"yarn run server\" \"yarn run webpack\"",
     "build": "set NODE_ENV=production&&webpack -p --progress --colors",
+    "build:dev": "set NODE_ENV=development&&webpack --progress --colors",
     "build_linux": "NODE_ENV=production webpack -p --progress --colors"
   },
   "license": "MIT",

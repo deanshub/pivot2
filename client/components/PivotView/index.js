@@ -9,12 +9,8 @@ export default class PivotView extends Component {
   static propTypes = {
     bodyMatrix: PropTypes.array,
     headMatrix: PropTypes.array,
+    loadNextPage: PropTypes.func,
   }
-  // static defaultProps = {
-  // }
-
-  // componentDidMount(){
-  // }
 
   handleScroll(e) {
     const { loadNextPage } = this.props

@@ -33,20 +33,30 @@ module.exports = {
       'react-router-redux',
       'redux',
     ],
+    // pivot2: './containers/App/index.js',
   },
   output: {
     path: path.join(__dirname, './server/static'),
     filename: '[name].js',
+    jsonpFunction: 'sisenseWebpackJsonp',
+    libraryTarget: 'umd',
+    library: 'Pivot2',
   },
+  // externals: {
+  //   react: 'var React',
+  //   'react/addons': 'var React',
+  // },
   module: {
     loaders: [
       {
         test: /\.webworker\.js$/,
         loader: 'worker-loader',
+        include: /client/,
       },
       {
         test: /\.html$/,
         loader: 'file?name=[name].[ext]',
+        include: /client/,
       },
       {
         test: /\.css$/,
@@ -65,7 +75,7 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        loader:'babel-loader',
+        // loader:'babel-loader',
         loaders: [
           'react-hot',
           'babel-loader',

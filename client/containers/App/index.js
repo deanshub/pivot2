@@ -1,23 +1,19 @@
 import React, { Component } from 'react'
-import { bindActionCreators } from 'redux'
-import { connect } from 'react-redux'
 import classnames from 'classnames'
 // import Sisense, {Widget} from '../../components/Sisense'
-import PivotView from '../../components/PivotView'
-import Pager from '../../components/Pager'
+import Pivot from '../Pivot'
 import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
-import TransformerWorker from '../../store/transformer.webworker'
-const transformer = new TransformerWorker()
 import PanelWorker from '../../components/QueryPanel/panel.webworker'
 
-class App extends Component {
+export default class App extends Component {
   constructor(props, context) {
     super(props, context)
 
     this.state = {
     }
 
+    this.panelWorker = new PanelWorker()
     this.loadingNextPage = false
     this.streamStopped = false
 
@@ -27,7 +23,6 @@ class App extends Component {
   }
 
   componentDidMount(){
-    this.panelWorker = new PanelWorker()
     this.panelWorker.addEventListener('message', ::this.handleWebworkerMessage)
   }
 
@@ -80,16 +75,6 @@ class App extends Component {
       totalRowsNumber,
     })
   }
-
-  getWholeResults(results) {
-    transformer.postMessage(results)
-    transformer.addEventListener('message',(e)=>{
-      this.setState({
-        data: e.data,
-      })
-    })
-  }
-
 
   startStream(token, jaql, url, chunksLimit, pageSize, pageNumber) {
     if (!Number.isInteger(pageNumber)) {
@@ -157,39 +142,19 @@ class App extends Component {
           className={classnames(style.container)}
       >
         <QueryPanel
-            getWholeResults={::this.getWholeResults}
             onChunks={::this.onChunks}
             resetPivotData={::this.resetPivotData}
             startStream={::this.startStream}
             stopStream={::this.stopStream}
         />
-        <PivotView
+        <Pivot
             bodyMatrix={bodyMatrix}
+            currentPage={this.streamMetaData.pageNumber}
             headMatrix={headMatrix}
             loadNextPage ={::this.loadNextPage}
-        />
-        <Pager
-            currentPage={this.streamMetaData.pageNumber}
             pageCount={pageCount}
         />
       </div>
     )
   }
 }
-
-function mapStateToProps(state) {
-  return {
-    board: state.board,
-  }
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    // actions: bindActionCreators(BoardActions, dispatch)
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(App)

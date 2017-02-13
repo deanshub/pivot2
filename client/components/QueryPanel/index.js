@@ -1,4 +1,3 @@
-import request from 'superagent'
 import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
@@ -21,55 +20,6 @@ export default class Pivot extends Component {
     localStorage.setItem(`QueryPanel.${name}`, value)
     this.setState({
       [name]:value,
-    })
-  }
-
-
-  sendJaql() {
-    const { getWholeResults } = this.props
-    const { token, jaql, url } = this.state
-
-    let baseUrl = url
-
-    if (baseUrl.indexOf('://') > -1) {
-      baseUrl = baseUrl.split('/')[2]
-    }
-    else {
-      baseUrl = baseUrl.split('/')[0]
-    }
-
-    let fullToken = token
-
-    if (!fullToken.startsWith('Bearer ')) {
-      fullToken = `Bearer ${token}`
-    }
-
-    let test = 'localhost:9999'
-
-    let parsedJaql = ''
-
-    try {
-      parsedJaql = JSON.parse(jaql)
-    } catch (err) {
-      console.error('err', err)
-      return
-    }
-
-    let datasource = parsedJaql.datasource.id || parsedJaql.datasource.fullname
-    request.post(`http://${test}/jaqlRunner`)
-    .send({
-      jaql: parsedJaql,
-      token: fullToken,
-      baseUrl: `http://${baseUrl}`,
-      datasource,
-    })
-    .set('Accept', 'application/json')
-    .then((result) => {
-      let jaqlResult = JSON.parse(result.text)
-
-      return getWholeResults(jaqlResult)
-    }).catch((err) =>{
-      console.log('err', err)
     })
   }
 
@@ -144,7 +94,7 @@ export default class Pivot extends Component {
         </div>
         <div className={style.buttonContainer}>
           <div>
-            <button onClick={::this.sendJaql}>Send Jaql</button>
+            <button>Send Jaql</button>
           </div>
           <div>
             <button onClick={()=>startStream(token, jaql, url, chunksLimit, pageSize, pageNumber)}>Try Streaming</button>

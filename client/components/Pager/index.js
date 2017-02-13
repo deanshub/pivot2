@@ -4,10 +4,11 @@ import style from './style.css'
 
 export default class Pager extends Component {
   static propTypes = {
-    currentPage: PropTypes.number.isRequired,
+    currentPage: PropTypes.number,
     pageCount: PropTypes.number,
   }
   static defaultProps = {
+    currentPage:1,
   }
 
   render(){

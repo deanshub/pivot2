@@ -284,30 +284,6 @@ app.post('/jaqlRunner', function (req, res) {
   })
 })
 
-
-app.post('/jaqlStream', function (req, res) {
-  // let jaql = req.body.jaql
-  // let token = req.body.token
-  // let baseUrl = req.body.baseUrl
-  // let datasource = req.body.datasource
-  //
-  // request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`,{
-  //   form: jaql,
-  //   headers: {
-  //     'Authorization': token,
-  //   },
-  // }).pipe(csvStream)
-  //   .on('error',function(err){
-  //       console.error(err)
-  //   })
-  //   .on('data',function(data){
-  //       // outputs an object containing a set of key/value pair representing a line found in the csv file.
-  //       console.log('newData\n', data)
-  //   })
-  //
-  // return res.status(200)
-})
-
 app.use(express.static(path.join(__dirname, 'static')))
 server.listen(9999, function () {
   console.log('Server port 9999')
