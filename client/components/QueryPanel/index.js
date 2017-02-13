@@ -11,7 +11,7 @@ export default class Pivot extends Component {
       jaql: localStorage.getItem('QueryPanel.jaql')||'',
       url: localStorage.getItem('QueryPanel.url')||'localhost:8888',
       chunksLimit: localStorage.getItem('QueryPanel.chunksLimit')||1,
-      pageSize: localStorage.getItem('QueryPanel.pageSize')||0,
+      pageSize: localStorage.getItem('QueryPanel.pageSize')||25,
       pageNumber: localStorage.getItem('QueryPanel.pageNumber')||1,
     }
   }
