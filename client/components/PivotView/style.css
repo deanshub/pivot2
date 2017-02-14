@@ -7,3 +7,13 @@
   width: 100%;
   border-collapse: collapse;
 }
+
+.stickyHeader {
+  border-collapse: collapse;
+  position: absolute;
+  background-color: white;
+}
+
+.hiddenTh {
+  visibility: hidden;
+}

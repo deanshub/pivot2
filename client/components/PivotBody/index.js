@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react'
+import shallowCompare from 'react-addons-shallow-compare'
 import classnames from 'classnames'
 import style from './style.css'
 
@@ -8,6 +9,10 @@ export default class PivotBody extends Component {
   }
   static defaultProps = {
     bodyMatrix: [],
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return shallowCompare(this, nextProps, nextState)
   }
 
   render() {
