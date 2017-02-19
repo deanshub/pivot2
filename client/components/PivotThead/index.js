@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import style from './style.css'
 
 
-export default class PivotHead extends Component {
+export default class PivotThead extends Component {
   static propTypes = {
     className: PropTypes.string,
     headMatrix: PropTypes.array,

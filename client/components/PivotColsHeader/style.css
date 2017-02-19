@@ -1,0 +1,15 @@
+.stickyHeaderWrapper {
+  position: absolute;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.stickyHeaderInnerWrapper {
+  position: absolute;
+}
+
+.stickyHeader {
+  border-collapse: collapse;
+  position: absolute;
+  background-color: white;
+}

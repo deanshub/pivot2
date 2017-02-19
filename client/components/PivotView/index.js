@@ -1,9 +1,11 @@
 import React, { Component, PropTypes } from 'react'
 import classnames from 'classnames'
 import style from './style.css'
-import {LEAF_CHILDREN_COUNT_SYM} from '../../constants/symbols'
-import PivotHead from '../PivotHead'
+import PivotThead from '../PivotThead'
 import PivotBody from '../PivotBody'
+import PivotCornerHeader from '../PivotCornerHeader'
+import PivotColsHeader from '../PivotColsHeader'
+import helpers from '../../Utils/helpers'
 import shallowCompare from 'react-addons-shallow-compare'
 import R from 'ramda'
 
@@ -40,6 +42,7 @@ export default class PivotView extends Component {
 
       const newScrollTop = pivotTable.scrollTop
       const newScrollLeft = pivotTable.scrollLeft
+
       if (!R.equals(scrollTop, newScrollTop)) {
         this.handleVerticalScroll(pivotTable, newScrollTop)
       }
@@ -103,7 +106,7 @@ export default class PivotView extends Component {
       }
 
       const newStickyHeaderWrapperStyle =
-        this.getStickyHeaderWrapperSizes(this.stickyHeaderWrapper.parentElement, this.container.childNodes[0])
+        this.getStickyHeaderWrapperSizes(this.pivotScrollWrapper, this.container.childNodes[0])
 
       if (!R.equals(this.state.stickyHeaderWrapperStyle, newStickyHeaderWrapperStyle)) {
         stateToChange.stickyHeaderWrapperStyle = newStickyHeaderWrapperStyle
@@ -189,57 +192,7 @@ export default class PivotView extends Component {
     }
   }
 
-  consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
-    const rowsExists = hierarchies.hierarchyRows.length>0
-    const colsExists = hierarchies.hierarchyCols.length>0
-    const dataExists = hierarchies.hierarchyData.length>1
 
-    let headerMatrix = []
-    let dataCellsAmountToAdd
-
-
-
-    if (!rowsExists && !colsExists && !dataExists){
-      // TODO: take care of 1 data
-      headerMatrix = [[]]
-      dataCellsAmountToAdd = dataHeaders.length
-    }else if(colsExists && dataExists){
-      // hierarchyCols.length + 1
-      headerMatrix = Array.from(Array(colsHeaders.length + 1)).map(()=> {
-        return []
-      })
-
-      dataCellsAmountToAdd = colsHeaders[colsHeaders.length - 1].length
-    }else if(rowsExists && !colsExists && !dataExists){
-      headerMatrix = [[]]
-      dataCellsAmountToAdd = dataHeaders.length
-      // 1
-    }else if(colsExists || dataExists){
-      if (dataExists) {
-        headerMatrix = [[]]
-        dataCellsAmountToAdd = 1
-      } else {
-        headerMatrix = Array.from(Array(colsHeaders.length)).map(()=> {
-          return []
-        })
-
-        dataCellsAmountToAdd = colsHeaders[colsHeaders.length - 1].length
-      }
-      // hierarchyCols.length || 1
-    }
-
-    headerMatrix[0] = headerMatrix[0].concat(rowsHeaders)
-
-    colsHeaders.forEach((currRow, index) => {
-      headerMatrix[index] = headerMatrix[index].concat(currRow)
-    })
-
-    for (let index = 0; index < dataCellsAmountToAdd; index++) {
-      headerMatrix[headerMatrix.length-1] = headerMatrix[headerMatrix.length-1].concat(dataHeaders)
-    }
-
-    return headerMatrix
-  }
 
   render() {
     const {headersData, rowsPanelHeaders, bodyData} = this.props
@@ -259,7 +212,7 @@ export default class PivotView extends Component {
     if (headersData) {
       const {colsHeaders, dataHeaders, hierarchies} = headersData
       rowsHeaders = headersData.rowsHeaders
-      headMatrix = this.consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies)
+      headMatrix = helpers.consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies)
     }
 
     return (
@@ -268,44 +221,21 @@ export default class PivotView extends Component {
           onScroll={::this.handleScroll}
           ref={pivotScrollWrapper=>this.pivotScrollWrapper=pivotScrollWrapper}
       >
-        <div
-            className={classnames(style.stickyHeaderWrapper)}
-            style={stickyHeaderWrapperStyle}
-        >
-          <div className={classnames(style.stickyHeaderInnerWrapper)}>
-            <table
-                className={classnames(style.stickyHeaderCorner)}
-                style={headerSizes.cornerSizes}
-            >
-                <PivotHead
-                    headMatrix={[rowsHeaders]}
-                    headerSizes={headerSizes.thSizes}
-                />
-            </table>
-          </div>
-        </div>
-        <div
-            className={classnames(style.stickyHeaderWrapper)}
-            ref={stickyHeaderWrapper=>this.stickyHeaderWrapper=stickyHeaderWrapper}
-            style={stickyHeaderWrapperStyle}
-        >
-          <div className={classnames(style.stickyHeaderInnerWrapper)}>
-            <table
-                className={classnames(style.stickyHeader)}
-                style={headerSizes.tableSizes}
-            >
-                <PivotHead
-                    headMatrix={headMatrix}
-                    headerSizes={headerSizes.thSizes}
-                    scrollLeft={scrollLeft}
-                />
-            </table>
-          </div>
-        </div>
+        <PivotCornerHeader
+            headerSizes={headerSizes}
+            rowsHeaders={rowsHeaders}
+            stickyHeaderWrapperStyle={stickyHeaderWrapperStyle}
+        />
+        <PivotColsHeader
+            headMatrix={headMatrix}
+            headerSizes={headerSizes}
+            scrollLeft={scrollLeft}
+            stickyHeaderWrapperStyle={stickyHeaderWrapperStyle}
+        />
         <table className={classnames(style.pivotTable)}
             ref={container=>this.container=container}
         >
-          <PivotHead
+          <PivotThead
               className={classnames(style.hiddenThead)}
               headMatrix={headMatrix}
           />

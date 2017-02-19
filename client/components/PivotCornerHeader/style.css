@@ -1,0 +1,16 @@
+.stickyHeaderWrapper {
+  position: absolute;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.stickyHeaderInnerWrapper {
+  position: absolute;
+}
+
+.stickyHeaderCorner{
+  border-collapse: collapse;
+  position: absolute;
+  background-color: white;
+  z-index: 99;
+}
