@@ -1,25 +1,28 @@
 import React, { Component, PropTypes } from 'react'
-// import Sisense, {Widget} from '../../components/Sisense'
+import classnames from 'classnames'
+import style from './style.css'
 import PivotView from '../../components/PivotView'
 import Pager from '../../components/Pager'
 
 export default class Pivot extends Component {
   static propTypes = {
-    bodyMatrix: PropTypes.array,
+    rowsPanelHeaders: PropTypes.array,
+    bodyData: PropTypes.array,
     currentPage: PropTypes.number,
     loadNextPage: PropTypes.func,
     pageCount: PropTypes.number,
-    headMatrix: PropTypes.array,
+    headersData: PropTypes.object,
   }
   render() {
-    const { headMatrix, bodyMatrix, loadNextPage, pageCount, currentPage } = this.props
+    const { headersData, rowsPanelHeaders, bodyData, loadNextPage, pageCount, currentPage } = this.props
 
     return (
       <div>
         <PivotView
-            bodyMatrix={bodyMatrix}
-            headMatrix={headMatrix}
+            bodyData={bodyData}
+            headersData={headersData}
             loadNextPage ={loadNextPage}
+            rowsPanelHeaders={rowsPanelHeaders}
         />
         <Pager
             currentPage={currentPage}

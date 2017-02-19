@@ -31,7 +31,7 @@ export default class App extends Component {
     if (type==='startQuery'){
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamStopped){
-      this.onChunks(restData.bodyMatrix, restData.headMatrix, restData.end)
+      this.onChunks(restData.headersData, restData.rowsPanelHeaders, restData.bodyData, restData.end)
     } else if (type === 'totalRowsNumber') {
       this.getTotalRowsNumber(restData.totalRowsNumber)
     }
@@ -60,10 +60,11 @@ export default class App extends Component {
     })
   }
 
-  onChunks(bodyMatrix, headMatrix, end){
+  onChunks(headersData, rowsPanelHeaders, bodyData, end){
     this.setState({
-      bodyMatrix,
-      headMatrix,
+      rowsPanelHeaders,
+      bodyData,
+      headersData,
     })
 
     this.loadingNextPage = false
@@ -129,7 +130,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { headMatrix, bodyMatrix, totalRowsNumber } = this.state
+    const { headersData, rowsPanelHeaders, bodyData, totalRowsNumber } = this.state
 
     let pageCount = 0
 
@@ -148,11 +149,12 @@ export default class App extends Component {
             stopStream={::this.stopStream}
         />
         <Pivot
-            bodyMatrix={bodyMatrix}
+            bodyData={bodyData}
             currentPage={this.streamMetaData.pageNumber}
-            headMatrix={headMatrix}
+            headersData={headersData}
             loadNextPage ={::this.loadNextPage}
             pageCount={pageCount}
+            rowsPanelHeaders={rowsPanelHeaders}
         />
       </div>
     )

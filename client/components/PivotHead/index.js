@@ -9,6 +9,7 @@ export default class PivotHead extends Component {
   static propTypes = {
     className: PropTypes.string,
     headMatrix: PropTypes.array,
+    scrollLeft: PropTypes.number,
   }
   static defaultProps = {
     headMatrix: [],
@@ -18,11 +19,19 @@ export default class PivotHead extends Component {
     return shallowCompare(this, nextProps, nextState)
   }
 
+  componentDidUpdate() {
+    const {scrollLeft} = this.props
+
+    if (scrollLeft !== undefined) {
+      this.container.parentElement.style.left = (-1)*scrollLeft + 'px'
+    }
+  }
+
   render() {
     const {headMatrix, headerSizes, className} = this.props
 
     return (
-      <thead className={className}>
+      <thead className={className} ref={container=>this.container=container}>
         {
           headMatrix.map((row, rowIndex)=>
             <tr key={rowIndex}>

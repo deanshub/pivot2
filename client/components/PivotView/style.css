@@ -1,11 +1,22 @@
 .container{
-  height: 600px;
-  overflow: auto;
+  height: 60vh;
+  width: auto;
+  overflow-x: auto;
 }
 
 .pivotTable {
   width: 100%;
   border-collapse: collapse;
+}
+
+.stickyHeaderWrapper {
+  position: absolute;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.stickyHeaderInnerWrapper {
+  position: absolute;
 }
 
 .stickyHeader {
@@ -14,6 +25,19 @@
   background-color: white;
 }
 
-.hiddenTh {
+.stickyHeaderCorner{
+  border-collapse: collapse;
+  position: absolute;
+  background-color: white;
+  z-index: 99;
+}
+
+.hiddenThead {
   visibility: hidden;
+}
+
+.stickyRowsPanel {
+  position: absolute;
+  background-color: white;
+  overflow-y: hidden;
 }

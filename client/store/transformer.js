@@ -172,11 +172,14 @@ export default {
     const bodyDataRowsHeaders = buildBodyDataRowsHeaders(headersData.rows)
     // build body data
     const bodyData = buildBodyData(headersData, hierarchy)
-    // consolidate body
-    return consolidateBody(bodyDataRowsHeaders, bodyData)
+
+    return {
+      bodyDataRowsHeaders,
+      bodyData,
+    }
   },
 
-  headersDataToHeadMatrix: (headersData, hierarchy)=>{
+  getHeadersData: (headersData, hierarchy)=>{
     const hierarchyData = hierarchy.filter(header=>header.type==='measures')
     const hierarchyRows = hierarchy.filter(header=>header.type==='rows')
     const hierarchyCols = hierarchy.filter(header=>header.type==='columns')
@@ -184,11 +187,26 @@ export default {
     const rowsHeaders = buildRowsHeaders(hierarchyRows)
     const colsHeaders = buildColsHeaders(headersData.cols)
 
-    return consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, {
-      hierarchyData,
-      hierarchyRows,
-      hierarchyCols,
+    const colspanMuliplier = dataHeaders.length || 1
+
+    const rowsHeadersWithRowspan = rowsHeaders
+      .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
+    const colsHeadersWithColspan = colsHeaders.map(colLayer=>{
+      return colLayer.map(colHeader=>{
+        return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*colspanMuliplier})
+      })
     })
+
+    return {
+      rowsHeaders: rowsHeadersWithRowspan,
+      colsHeaders: colsHeadersWithColspan,
+      dataHeaders,
+      hierarchies: {
+        hierarchyData,
+        hierarchyRows,
+        hierarchyCols,
+      },
+    }
   },
 }
 
@@ -271,15 +289,6 @@ function buildBodyData(headersData, hierarchy){
   return matrix
 }
 
-function consolidateBody(bodyDataRowsHeaders, bodyData){
-  if (bodyDataRowsHeaders.length === 0) {
-    return bodyData
-  }
-
-  return bodyDataRowsHeaders.map((row, index)=>{
-    return row.concat(bodyData[index])
-  })
-}
 
 function buildDataHeaders(hierarchyData=[]){
   return hierarchyData.map(hierarchyDataPart=>{
@@ -323,65 +332,6 @@ function buildColsHeaders(colsHeadersData){
   return colsMatrix
 }
 
-function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
-  const rowsExists = hierarchies.hierarchyRows.length>0
-  const colsExists = hierarchies.hierarchyCols.length>0
-  const dataExists = hierarchies.hierarchyData.length>1
-
-  let headerMatrix = []
-  let dataCellsAmountToAdd
-
-  const colspanMuliplier = dataHeaders.length || 1
-
-  const rowsHeadersWithRowspan = rowsHeaders
-    .map(rowHeader=>Object.assign({},rowHeader,{rowspan:colsHeaders.length + 1}))
-  const colsHeadersWithColspan = colsHeaders.map(colLayer=>{
-    return colLayer.map(colHeader=>{
-      return Object.assign({}, colHeader, {colspan:colHeader[LEAF_CHILDREN_COUNT_SYM]*colspanMuliplier})
-    })
-  })
-
-  if (!rowsExists && !colsExists && !dataExists){
-    // TODO: take care of 1 data
-    headerMatrix = [[]]
-    dataCellsAmountToAdd = dataHeaders.length
-  }else if(colsExists && dataExists){
-    // hierarchyCols.length + 1
-    headerMatrix = Array.from(Array(colsHeadersWithColspan.length + 1)).map(()=> {
-      return []
-    })
-
-    dataCellsAmountToAdd = colsHeadersWithColspan[colsHeadersWithColspan.length - 1].length
-  }else if(rowsExists && !colsExists && !dataExists){
-    headerMatrix = [[]]
-    dataCellsAmountToAdd = dataHeaders.length
-    // 1
-  }else if(colsExists || dataExists){
-    if (dataExists) {
-      headerMatrix = [[]]
-      dataCellsAmountToAdd = 1
-    } else {
-      headerMatrix = Array.from(Array(colsHeadersWithColspan.length)).map(()=> {
-        return []
-      })
-
-      dataCellsAmountToAdd = colsHeadersWithColspan[colsHeadersWithColspan.length - 1].length
-    }
-    // hierarchyCols.length || 1
-  }
-
-  headerMatrix[0] = headerMatrix[0].concat(rowsHeadersWithRowspan)
-
-  colsHeadersWithColspan.forEach((currRow, index) => {
-    headerMatrix[index] = headerMatrix[index].concat(currRow)
-  })
-
-  for (let index = 0; index < dataCellsAmountToAdd; index++) {
-    headerMatrix[headerMatrix.length-1] = headerMatrix[headerMatrix.length-1].concat(dataHeaders)
-  }
-
-  return headerMatrix
-}
 
 function getColPosition(hierarchy, headerColData, rowData){
   const colsPath = rowData.filter((curr,index)=>

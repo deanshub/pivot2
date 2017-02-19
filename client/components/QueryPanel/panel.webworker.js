@@ -38,13 +38,14 @@ const subscriber = result
 .bufferTime(maxChunksLimit)
 .subscribe((chunks) => {
   if (chunks.length>0){
-    const headMatrix = transformer.headersDataToHeadMatrix(tempHeadersData, tempHierarchy)
-    const bodyMatrix = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
+    const headersData = transformer.getHeadersData(tempHeadersData, tempHierarchy)
+    const rowsHeadersAndBodyData = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
 
     self.postMessage({
       type:'onChunks',
-      bodyMatrix,
-      headMatrix,
+      rowsPanelHeaders: rowsHeadersAndBodyData.bodyDataRowsHeaders,
+      bodyData: rowsHeadersAndBodyData.bodyData,
+      headersData,
       end: chunks[chunks.length-1].end,
     })
   }
