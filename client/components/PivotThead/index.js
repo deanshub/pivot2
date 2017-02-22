@@ -13,9 +13,11 @@ export default class PivotThead extends Component {
     scrollLeft: PropTypes.number,
     sticky: PropTypes.bool,
     headerSizes: PropTypes.array,
+    rowsHeaders: PropTypes.array,
   }
   static defaultProps = {
     headMatrix: [],
+    rowsHeaders: [],
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -26,12 +28,12 @@ export default class PivotThead extends Component {
     const {scrollLeft} = this.props
 
     if (scrollLeft !== undefined) {
-      this.container.parentElement.style.left = (-1)*scrollLeft + 'px'
+      this.container.parentElement.style.left = `${(-1)*scrollLeft}px`
     }
   }
 
   render() {
-    const {headMatrix, headerSizes, className, sticky, resizeColumn} = this.props
+    const {headMatrix, headerSizes, className, sticky, resizeColumn, rowsHeaders} = this.props
 
     return (
       <thead
@@ -43,7 +45,7 @@ export default class PivotThead extends Component {
             <tr key={rowIndex}>
             {
               row.map((col, colIndex)=> {
-                const thStyle = rowIndex===rows.length-1 ?
+                const thStyle = rowIndex===rows.length-1 || (rowIndex===0 && colIndex<rowsHeaders.length) ?
                   helpers.getByPath(headerSizes, `${rowIndex}.${colIndex}`)
                   :
                   {}

@@ -9,6 +9,7 @@ export default class PivotColsHeader extends Component {
     headMatrix: PropTypes.array,
     headerSizes: PropTypes.object,
     resizeColumn: PropTypes.func,
+    rowsHeaders: PropTypes.array,
     stickyHeaderWrapperStyle: PropTypes.object,
     scrollLeft: PropTypes.number,
   }
@@ -31,6 +32,7 @@ export default class PivotColsHeader extends Component {
       stickyHeaderWrapperStyle,
       scrollLeft,
       resizeColumn,
+      rowsHeaders,
     } = this.props
 
     return (
@@ -48,6 +50,7 @@ export default class PivotColsHeader extends Component {
                   headMatrix={headMatrix}
                   headerSizes={headerSizes.thSizes}
                   resizeColumn={resizeColumn}
+                  rowsHeaders={rowsHeaders}
                   scrollLeft={scrollLeft}
                   sticky
               />

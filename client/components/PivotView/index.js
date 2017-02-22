@@ -322,6 +322,7 @@ export default class PivotView extends Component {
             headMatrix={headMatrix}
             headerSizes={headerSizes}
             resizeColumn={::this.resizeColumnHandler}
+            rowsHeaders={rowsHeaders}
             scrollLeft={scrollLeft}
             stickyHeaderWrapperStyle={stickyHeaderWrapperStyle}
         />
