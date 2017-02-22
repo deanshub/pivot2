@@ -18,13 +18,16 @@ export default class PivotView extends Component {
     rowsPanelHeaders: PropTypes.array,
   }
 
+  static defaultProps = {
+  }
+
   constructor(props, context) {
     super(props, context)
 
     this.state = {
       headerSizes: {
-
       },
+      userDefinedSize: false,
       rowsPanelSizes: [],
       newStickyRowsStyle: {},
       stickyHeaderWrapperStyle: {},
@@ -84,14 +87,14 @@ export default class PivotView extends Component {
 
   componentDidUpdate() {
     const { headersData, rowsPanelHeaders } = this.props
+    const { userDefinedSize } = this.state
 
     let stateToChange = {}
 
-    if (headersData) {
+    if (headersData && !userDefinedSize) {
       const thNewSizes = this.getHeadersSizes(this.container.childNodes[0])
 
       if (!R.equals(this.state.headerSizes.thSizes, thNewSizes)) {
-
         const tableSizes = {
           width: this.container.offsetWidth,
         }
@@ -192,7 +195,47 @@ export default class PivotView extends Component {
     }
   }
 
+  resizeColumnHandler(rowIndex, selectedColIndex, x){
+    const {headersData} = this.props
+    const {headerSizes} = this.state
+    let colsAugmented = 0
 
+    // go to last row
+    const lastRow = headerSizes.thSizes[headerSizes.thSizes.length-1]
+    // go through cols
+    const newLastRow = lastRow.map(function (col, colIndex) {
+      // if first row skip amount of row headers
+      if (headerSizes.thSizes[0]===lastRow && colIndex<headersData.rowsHeaders.length){
+        return col
+      }
+      // if more then one meessure then skip if not the right messure
+      const messureIndex = colIndex % headersData.dataHeaders.length
+      if (headersData.dataHeaders.length>1 && messureIndex!==selectedColIndex-1%headersData.dataHeaders.length){
+        return col
+      }
+
+      // change col size
+      const newSize = parseInt(col.width.slice(0,-2)) + x
+      const newCol = Object.assign({},
+        col,
+        {width:`${newSize}px`}
+      )
+      colsAugmented++
+
+      return newCol
+    })
+
+    this.setState({
+      userDefinedSize: true,
+      headerSizes: {
+        tableSizes: Object.assign({}, headerSizes.tableSizes, {width: headerSizes.tableSizes.width + (colsAugmented * x)}),
+        thSizes:[
+          ...headerSizes.thSizes.slice(0, headerSizes.thSizes.length-1),
+          newLastRow,
+        ],
+      },
+    })
+  }
 
   render() {
     const {headersData, rowsPanelHeaders, bodyData} = this.props
@@ -204,6 +247,7 @@ export default class PivotView extends Component {
       scrollTop,
       stickyRowsStyle,
       stickyHeaderWrapperStyle,
+      userDefinedSize,
     } = this.state
 
     let headMatrix = []
@@ -229,6 +273,7 @@ export default class PivotView extends Component {
         <PivotColsHeader
             headMatrix={headMatrix}
             headerSizes={headerSizes}
+            resizeColumn={::this.resizeColumnHandler}
             scrollLeft={scrollLeft}
             stickyHeaderWrapperStyle={stickyHeaderWrapperStyle}
         />
@@ -238,6 +283,7 @@ export default class PivotView extends Component {
           <PivotThead
               className={classnames(style.hiddenThead)}
               headMatrix={headMatrix}
+              headerSizes={headerSizes.thSizes}
           />
           <PivotBody
               additionalStyle={stickyRowsStyle}
@@ -245,6 +291,8 @@ export default class PivotView extends Component {
               rowsPanelHeaders={rowsPanelHeaders}
               rowsPanelSizes={rowsPanelSizes}
               scrollTop={scrollTop}
+              userDefinedSize={userDefinedSize}
+              headerSizes={headerSizes.thSizes}
           />
           <PivotBody
               bodyData={bodyData}

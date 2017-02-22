@@ -25,13 +25,6 @@
   background-color: white;
 }
 
-.stickyHeaderCorner{
-  border-collapse: collapse;
-  position: absolute;
-  background-color: white;
-  z-index: 99;
-}
-
 .hiddenThead {
   visibility: hidden;
 }

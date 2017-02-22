@@ -1,4 +1,33 @@
-
 .th{
   border: 1px solid #dfdfdf;
+}
+
+.titleDiv{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.resizeContainer{
+  position: absolute;
+  width: 10px;
+  top: 0;
+  height: 100%;
+  cursor: col-resize;
+  margin-left: -5px;
+  /*transform: none !important;*/
+}
+
+.resizeVisual{
+  height: 100%;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    black,
+    black 50%,
+    white 50%,
+    white
+  );
+  background-size: 100% 15px;
+  margin: 0 auto;
 }

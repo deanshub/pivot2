@@ -16,12 +16,6 @@ function cancelStream(client) {
   client.cancelRequest = true
 }
 
-function compareArrays(array1, array2) {
-  return (array1.length == array2.length) && array1.every((element, index) => {
-    return element === array2[index]
-  })
-}
-
 function runQueryRowsGroups(data) {
   const { jaql, datasource, baseUrl, token } = data
 
@@ -212,21 +206,6 @@ io.on('connection', function(client){
     let datasource = data.datasource
     const jaqlJson = JSON.parse(decodeURIComponent(decodeURIComponent(jaql.slice(5))))
 
-    const hierarchy = jaqlJson.metadata.reduce((res, curr)=>{
-      if (curr && curr.field){
-        res[curr.field.index] =
-        Object.assign({}, curr.field,
-          {name:curr.jaql.title, type:curr.panel}
-        )
-      }
-
-      return res
-    },[])
-
-    const rowsHierarchy = hierarchy.filter((curr)=> {
-      return curr.type === 'rows'
-    })
-
     const jaqlHash = getJaqlHash(jaqlJson)
 
     getPivotRowsGroups(jaqlHash, {jaql:jaqlJson,token,baseUrl,datasource}).then((pivotMetaData)=>{
@@ -253,28 +232,11 @@ io.on('connection', function(client){
         // TODO: change csvStream to create the array automatically
         const row = Object.keys(data).map(header=>data[header])
 
-        // let currRowValues = []
-        //
-        // rowsHierarchy.forEach((currRow) => {
-        //   currRowValues.push(row[currRow.index])
-        // })
-        //
-        // const sameRow = compareArrays(currRowValues, lastRowValues)
-        //
-        // if (!sameRow) {
-        //   lastRowValues = currRowValues
-        //   rowCounter++
-        // }
-
         return row
       }).subscribe((row) => {
         client.emit('streamChunk', {row})
       })
     }).catch(console.log)
-
-    // let lastRowValues = []
-    // let rowCounter = 0
-
   })
 
   client.on('cancelStream', ()=>cancelStream(client))
@@ -285,9 +247,6 @@ io.on('connection', function(client){
   })
 })
 
-// app.get('/', function (req, res) {
-//   res.send('Hello World!')
-// })
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 

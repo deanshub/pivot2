@@ -1,0 +1,17 @@
+.resizeColContainer{
+  position: absolute;
+  z-index: 2;
+  height: 100%;
+  margin: 0;
+}
+
+.resizer{
+  position: absolute;
+  z-index: 3;
+  width: 10px;
+  cursor: e-resize;
+  top:0;
+  height: 100%;
+  margin-left: -2px;
+  border-right: 1px dashed black;
+}

@@ -13,6 +13,7 @@ let tempHeadersData= {
   },
 }
 
+// TODO: should we create\subscribe the Observable here?
 const result = Rx.Observable.create(function (subscriber) {
   socket.on('streamChunk', function(data) {
     subscriber.next({data: data.row, end: data.end})
@@ -34,13 +35,11 @@ const subscriber = result
   tempHeadersData = transformer.upsertRow(tempHeadersData, rowPath, row.data)
   tempHeadersData = transformer.upsertCol(tempHeadersData, colPath, row.data)
 })
-// .bufferCount(maxChunksLimit)
 .bufferTime(maxChunksLimit)
+.filter(chunks=>chunks.length>0)
 .subscribe((chunks) => {
-  if (chunks.length>0){
     const headersData = transformer.getHeadersData(tempHeadersData, tempHierarchy)
     const rowsHeadersAndBodyData = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
-
     self.postMessage({
       type:'onChunks',
       rowsPanelHeaders: rowsHeadersAndBodyData.bodyDataRowsHeaders,
@@ -48,7 +47,6 @@ const subscriber = result
       headersData,
       end: chunks[chunks.length-1].end,
     })
-  }
 })
 
 self.addEventListener('message', (e) => {

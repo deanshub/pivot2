@@ -12,6 +12,8 @@ export default class PivotBody extends Component {
     rowsHeaders: PropTypes.array,
     rowsPanelSizes: PropTypes.array,
     scrollTop: PropTypes.number,
+    headerSizes: PropTypes.array,
+    userDefinedSize: PropTypes.bool,
   }
   static defaultProps = {
     bodyData: [],
@@ -42,9 +44,18 @@ export default class PivotBody extends Component {
   }
 
   render() {
-    const {rowsPanelHeaders, bodyData, rowsPanelSizes, className, additionalStyle}=this.props
+    const {
+      rowsPanelHeaders,
+      bodyData,
+      rowsPanelSizes,
+      className,
+      additionalStyle,
+      headerSizes,
+      userDefinedSize,
+    } = this.props
 
     const bodyMatrix = this.consolidateBody(rowsPanelHeaders, bodyData)
+    const lastRow = userDefinedSize?headerSizes[headerSizes.length-1]:[]
     return (
       <tbody
           className={className}
@@ -65,7 +76,7 @@ export default class PivotBody extends Component {
                     rowSpan={col.rowspan}
                     style={tdStyle}
                 >
-                  {col.displayValue}
+                  <div style={userDefinedSize?{width:lastRow[colIndex]}:null}>{col.displayValue}</div>
                 </td>
               )
             })

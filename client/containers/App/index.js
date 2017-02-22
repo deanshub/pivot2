@@ -107,6 +107,10 @@ export default class App extends Component {
     this.setState({
       hierarchy: [],
       data: [],
+      headersData: undefined,
+      rowsPanelHeaders: undefined,
+      bodyData: undefined,
+      totalRowsNumber: undefined,
     })
   }
 
@@ -127,6 +131,11 @@ export default class App extends Component {
 
       this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber: pageNumber + 1})
     }
+  }
+
+  componentWillUnmount(){
+    this.panelWorker.close()
+    this.stopStream()
   }
 
   render() {

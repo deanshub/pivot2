@@ -33,7 +33,7 @@ module.exports = {
       'react-router-redux',
       'redux',
     ],
-    // pivot2: './containers/App/index.js',
+    // pivot2: './containers/Pivot/index.js',
   },
   output: {
     path: path.join(__dirname, './server/static'),
@@ -109,7 +109,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['', '.js', '.jsx'],
+    extensions: ['', '.js', '.jsx', 'es6'],
   },
   postcss: [
     rucksack({

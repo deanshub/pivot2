@@ -249,7 +249,6 @@ function buildBodyData(headersData, hierarchy){
       }).reduce((res,cur)=>res.concat(cur), [])
     }).reduce((res,cur)=>res.concat(cur), [])
   }
-
   // TODO: don't create the keys everytime
   const matrixColsCount = Object.keys(headersData.cols).reduce((res, curr)=> {
     return res + headersData.cols[curr][LEAF_CHILDREN_COUNT_SYM]
@@ -343,10 +342,11 @@ function getColPosition(hierarchy, headerColData, rowData){
 
   while (colsPathIndex<colsPath.length){
     let colsPathPart = colsPath[colsPathIndex]
-    const colPathPartPosition = Object.keys(headerColDataPart).sort()
-      .indexOf(colsPathPart)
+    let sortedHeaderColDataPartKeys = Object.keys(headerColDataPart).sort()
 
-    const soFarColsKeys = Object.keys(headerColDataPart)
+    const colPathPartPosition = sortedHeaderColDataPartKeys.indexOf(colsPathPart)
+
+    const soFarColsKeys = sortedHeaderColDataPartKeys
       .filter((name, index)=>index<=colPathPartPosition)
     soFarColsKeys.forEach((colKey, index, soFarColsKeys)=>{
       if (index!==soFarColsKeys.length-1){
