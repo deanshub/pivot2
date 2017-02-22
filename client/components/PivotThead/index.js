@@ -66,7 +66,7 @@ export default class PivotThead extends Component {
                       <ReactDraggable
                           axis="x"
                           bounds={{left: thStyle?-1*thStyle.width:undefined}}
-                          onStop={(e,{x,y})=>{console.log(x); resizeColumn(rowIndex, colIndex, x, y)}}
+                          onStop={(e,{x,y})=>{resizeColumn(rowIndex, colIndex, x, y)}}
                           position={{x:0,y:0}}
                       >
                         <div className={classnames(style.resizeContainer)}>
