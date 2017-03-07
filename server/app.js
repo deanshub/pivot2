@@ -5,187 +5,15 @@ const bodyParser = require('body-parser')
 const app = express()
 const request = require('request')
 const CsvStream = require('csv-stream')
-const hash = require('object-hash')
 const server = require('http').Server(app)
 const io = require('socket.io')(server)
+const rxEnhancements = require('./utils/rxEnhancements.js')
+const jaqlUtils = require('./utils/jaqlUtils.js')
 
-let pivotMetaData = {}
-
+Rx.Observable.prototype.groupToPivotRow = rxEnhancements.groupToPivotRow
 
 function cancelStream(client) {
   client.cancelRequest = true
-}
-
-function runQueryRowsGroups(data) {
-  const { jaql, datasource, baseUrl, token } = data
-
-  const rowsJaqlMetaData = getSpecificPanelFromJaql(jaql, 'rows').map((currMeta) => {
-    return currMeta.jaql
-  })
-
-  const colsJaqlMetaData = getSpecificPanelFromJaql(jaql, 'columns').map((currMeta) => {
-    return currMeta.jaql
-  })
-  const jaqlFormula = colsJaqlMetaData.reduce(generateJaqlContextAndFormula, {
-    formula: '',
-    context: {},
-  })
-
-  const jaqlRowsGroupCount = {
-    datasource: jaql.datasource,
-    metadata: rowsJaqlMetaData.concat([jaqlFormula]),
-  }
-
-  return new Promise((resolve, reject) => {
-    request.post(`${baseUrl}/api/datasources/${datasource}/jaql`, {
-      json: jaqlRowsGroupCount,
-      headers: {
-        'Authorization': token,
-      },
-    }, function(error, response, body) {
-      if (error) {
-        reject(error)
-      }
-
-      resolve(body.values)
-    })
-  })
-}
-
-function generateJaqlContextAndFormula(res, curr, index, orig) {
-  const name = `[${curr.table}.${curr.column}]`
-
-  res.context[name] = curr
-  if (index === orig.length - 1) {
-    res.formula = `${res.formula.slice(0,res.formula.lastIndexOf(',') + 1)}Count(${name})${res.formula.slice(res.formula.lastIndexOf(',') + 1)}`
-  } else {
-    res.formula = `${res.formula.slice(0,res.formula.lastIndexOf(',') + 1)}Sum(${name},)${res.formula.slice(res.formula.lastIndexOf(',') + 1)}`
-  }
-
-  return res
-}
-
-function getTotalRowsNumber(jaqlQueryData, rowsGroups) {
-  const lastRowIndex = getLastRowIndexFromJaql(jaqlQueryData)
-
-  const totalRowsNumber = rowsGroups.reduce((res, curr, index, orig) => {
-    if (index === 0 || orig[index - 1][lastRowIndex] !== curr[lastRowIndex]) {
-      return res + 1
-    }
-
-    return res
-  }, 0)
-
-  return totalRowsNumber
-}
-
-function getLastRowIndexFromJaql(jaqlQueryData) {
-  const rowsMetaData = getSpecificPanelFromJaql(jaqlQueryData, 'rows')
-
-  let lastRowIndex = 0
-
-  rowsMetaData.forEach((currRowMeta) => {
-    if (currRowMeta.field && currRowMeta.field.index > lastRowIndex) {
-      lastRowIndex = currRowMeta.field.index
-    }
-  })
-
-  return lastRowIndex
-}
-
-function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
-  return jaqlQueryData.metadata.filter((currMeta) => {
-    return currMeta.panel === wantedPanel
-  })
-}
-
-function getPivotRowsGroups(jaqlHash, jaqlQueryData) {
-  return new Promise((resolve) => {
-    if (pivotMetaData[jaqlHash] === undefined) {
-      return runQueryRowsGroups(jaqlQueryData).then((rowsGroups) => {
-        const totalRowsNumber = getTotalRowsNumber(jaqlQueryData.jaql, rowsGroups)
-        pivotMetaData[jaqlHash] = {
-          rowsGroups,
-          totalRowsNumber,
-        }
-
-        return resolve(pivotMetaData[jaqlHash])
-      })
-    } else {
-      return resolve(pivotMetaData[jaqlHash])
-    }
-  })
-}
-
-/**
-  * Converts a flowing stream to an Observable sequence.
-  * @param {Stream} stream A stream to convert to a observable sequence.
-  * @param {String} [finishEventName] Event that notifies about closed stream. ("end" by default)
-  * @param {String} [dataEventName] Event that notifies about incoming data. ("data" by default)
-  * @returns {Observable} An observable sequence which fires on each 'data' event as well as handling 'error' and finish events like `end` or `finish`.
-  */
-function fromStream(stream, finishEventName, dataEventName) {
-  stream.pause()
-
-  finishEventName = finishEventName || 'end'
-  dataEventName = dataEventName || 'data'
-
-  return Rx.Observable.create(function (observer) {
-    function dataHandler (data) {
-      observer.next(data)
-    }
-
-    function errorHandler (err) {
-      observer.error(err)
-    }
-
-    function endHandler () {
-      observer.complete()
-    }
-
-    stream.addListener(dataEventName, dataHandler)
-    stream.addListener('error', errorHandler)
-    stream.addListener(finishEventName, endHandler)
-
-    stream.resume()
-
-    return function () {
-      stream.removeListener(dataEventName, dataHandler)
-      stream.removeListener('error', errorHandler)
-      stream.removeListener(finishEventName, endHandler)
-    }
-  }).share()
-}
-
-function getJaqlHash(jaql) {
-  const jaqlToHash = {
-    datasource: jaql.datasource,
-    metadata: getSpecificPanelFromJaql(jaql, 'rows'),
-  }
-
-  return hash(jaqlToHash)
-}
-
-function calcNewOffsetByRows(offset, rowsGroups) {
-  let newOffset = 0
-
-  for (let rowGroupIndex = 0; rowGroupIndex < offset; rowGroupIndex++) {
-    newOffset = newOffset + rowsGroups[rowGroupIndex][rowsGroups[rowGroupIndex].length -1].data
-  }
-
-  return newOffset
-}
-
-function calcNewCountByRows(count, offset, rowsGroups) {
-  let newCount = 0
-
-  for (let rowGroupIndex = 0; rowGroupIndex < count; rowGroupIndex++) {
-    if (offset + rowGroupIndex < rowsGroups.length) {
-      newCount = newCount + rowsGroups[offset + rowGroupIndex][rowsGroups[offset + rowGroupIndex].length -1].data
-    }
-  }
-
-  return newCount
 }
 
 const options = {
@@ -196,7 +24,10 @@ const options = {
 }
 
 io.on('connection', function(client){
+  client.pivotsCache = {}
+
   console.log('connection')
+
   client.on('streamRequest', function(data) {
     let csvStream = CsvStream.createStream(options)
 
@@ -206,19 +37,31 @@ io.on('connection', function(client){
     let datasource = data.datasource
     const jaqlJson = JSON.parse(decodeURIComponent(decodeURIComponent(jaql.slice(5))))
 
-    const jaqlHash = getJaqlHash(jaqlJson)
+    const lastRowIndex = jaqlUtils.getLastRowIndexFromJaql(jaqlJson)
 
-    getPivotRowsGroups(jaqlHash, {jaql:jaqlJson,token,baseUrl,datasource}).then((pivotMetaData)=>{
-      client.emit('totalRowsNumber', pivotMetaData.totalRowsNumber)
-      const newOffset = calcNewOffsetByRows(jaqlJson.offset, pivotMetaData.rowsGroups)
-      const newCount = calcNewCountByRows(jaqlJson.count, jaqlJson.offset, pivotMetaData.rowsGroups)
+    const jaqlHash = jaqlUtils.getJaqlHash(jaqlJson)
+    if (!client.pivotsCache[jaqlHash]) {
+      client.pivotsCache[jaqlHash] = {}
+    }
 
-      jaqlJson.offset = newOffset
-      jaqlJson.count = newCount
+    if (!client.pivotsCache[jaqlHash].rawData) {
+      client.pivotsCache[jaqlHash].rawData = []
+    }
 
-      client.cancelRequest = false
+    if (!client.pivotsCache[jaqlHash].dataDictionary) {
+      client.pivotsCache[jaqlHash].dataDictionary = []
+    }
 
-      const jaqlResultStream = fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
+    const pageSize = jaqlJson.count
+    const wantedOffset = jaqlJson.offset
+
+    jaqlJson.offset = undefined
+    jaqlJson.count = undefined
+
+    client.cancelRequest = false
+
+    if (!client.pivotsCache[jaqlHash].streamObserver) {
+      const jaqlResultStream = rxEnhancements.fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
         // form: jaql,
         form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
         headers: {
@@ -226,20 +69,94 @@ io.on('connection', function(client){
         },
       }).pipe(csvStream))
 
+      client.pivotsCache[jaqlHash].currRowIndex = 0
+      client.pivotsCache[jaqlHash].numOfRowsCached = -1
+      client.pivotsCache[jaqlHash].lastRow = []
 
-      jaqlResultStream.map((data) => {
+      client.pivotsCache[jaqlHash].streamObserver = jaqlResultStream.map((data) => {
         // outputs an object containing a set of key/value pair representing a line found in the csv file.
         // TODO: change csvStream to create the array automatically
         const row = Object.keys(data).map(header=>data[header])
 
         return row
-      }).subscribe((row) => {
-        client.emit('streamChunk', {row})
+      }).do((data)=> {
+        client.pivotsCache[jaqlHash].rawData.push(data)
+      }).groupToPivotRow(lastRowIndex)
+      .filter((pivotRow) => {
+        return pivotRow && pivotRow.length
       })
-    }).catch(console.log)
+      .do((pivotRow) => {
+        client.pivotsCache[jaqlHash].dataDictionary.push({
+          start: client.pivotsCache[jaqlHash].currRowIndex,
+          end: client.pivotsCache[jaqlHash].currRowIndex + pivotRow.length - 1,
+        })
+
+        client.pivotsCache[jaqlHash].currRowIndex += pivotRow.length
+
+        client.pivotsCache[jaqlHash].numOfRowsCached += 1
+      }).share()
+    }
+
+    if (client.pivotsCache[jaqlHash].dataDictionary[wantedOffset] &&
+        client.pivotsCache[jaqlHash].dataDictionary[wantedOffset + pageSize]) {
+      client.emit('totalPagesCached', Math.ceil(client.pivotsCache[jaqlHash].dataDictionary.length / pageSize))
+
+      let rawDataOffset = client.pivotsCache[jaqlHash].dataDictionary[wantedOffset].start
+
+
+      for (let pivotRowIndex = 0; pivotRowIndex < pageSize; pivotRowIndex++) {
+        const pivotOffset = wantedOffset + pivotRowIndex
+
+        const pivotRowDataChunksCount =
+          (client.pivotsCache[jaqlHash].dataDictionary[pivotOffset].end - client.pivotsCache[jaqlHash].dataDictionary[pivotOffset].start) + 1
+
+        let currPivotRow = []
+
+        for (let dataChunksIndex = 0; dataChunksIndex < pivotRowDataChunksCount; dataChunksIndex++) {
+          currPivotRow.push(client.pivotsCache[jaqlHash].rawData[rawDataOffset])
+        }
+
+        client.emit('streamChunk', currPivotRow)
+
+        rawDataOffset = rawDataOffset + pivotRowDataChunksCount
+      }
+
+
+    } else {
+      client.pivotsCache[jaqlHash].streamObserver
+      .filter(() => {
+        return client.pivotsCache[jaqlHash].numOfRowsCached % pageSize === 0
+      }).map(() => {
+        return Math.floor(client.pivotsCache[jaqlHash].numOfRowsCached / pageSize)
+      })
+      .subscribe((totalPagesCached) => {
+        if (totalPagesCached % 1000 === 0) {
+          client.emit('totalPagesCached', totalPagesCached)
+        }
+      }, (err) => {
+        console.log(err)
+      }, () => {
+        client.emit('totalPagesCached', Math.ceil(client.pivotsCache[jaqlHash].numOfRowsCached / pageSize))
+      })
+
+      client.pivotsCache[jaqlHash].streamObserver
+      .filter(() => {
+        return (client.pivotsCache[jaqlHash].numOfRowsCached >= wantedOffset &&
+          client.pivotsCache[jaqlHash].numOfRowsCached < wantedOffset + pageSize)
+      })
+      .subscribe((pivotRow) => {
+        // setTimeout(()=>{
+        client.emit('streamChunk', pivotRow)
+        // }, 0)
+      }, (err) => {
+        console.log(err)
+      }, () => {
+        // client.emit('totalPagesCached', Math.ceil(pivotsCache[jaqlHash].numOfRowsCached / pageSize))
+      })
+    }
   })
 
-  client.on('cancelStream', ()=>cancelStream(client))
+  client.on('cancelStream'  , ()=> cancelStream(client))
 
   client.on('disconnect', function() {
     console.log('disconnected')
@@ -249,28 +166,6 @@ io.on('connection', function(client){
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
-
-app.post('/jaqlRunner', function (req, res) {
-  const jaql = req.body.jaql
-  const token = req.body.token
-  const baseUrl = req.body.baseUrl
-  const datasource = req.body.datasource
-
-  jaql.format = undefined
-
-  request.post(`${baseUrl}/api/datasources/${datasource}/jaql`,{
-    form: JSON.stringify(jaql),
-    headers: {
-      'Authorization': token,
-      'content-type': 'application/json',
-    },
-  }, function(error, response, body) {
-    if (error) {
-      return res.status(500).send(error)
-    }
-    return res.status(200).json(JSON.parse(body))
-  })
-})
 
 app.use(express.static(path.join(__dirname, 'static')))
 server.listen(9999, function () {

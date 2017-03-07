@@ -32,8 +32,8 @@ export default class App extends Component {
       this.startQuery(restData)
     }else if (type==='onChunks' && !this.streamStopped){
       this.onChunks(restData.headersData, restData.rowsPanelHeaders, restData.bodyData, restData.end)
-    } else if (type === 'totalRowsNumber') {
-      this.getTotalRowsNumber(restData.totalRowsNumber)
+    } else if (type === 'totalPagesCached') {
+      this.setPagesCount(restData.totalPagesCached)
     }
   }
 
@@ -70,10 +70,9 @@ export default class App extends Component {
     this.loadingNextPage = false
   }
 
-  getTotalRowsNumber(totalRowsNumber) {
-    totalRowsNumber = parseInt(totalRowsNumber)
+  setPagesCount(totalPagesCached) {
     this.setState({
-      totalRowsNumber,
+      totalPagesCached,
     })
   }
 
@@ -110,7 +109,7 @@ export default class App extends Component {
       headersData: undefined,
       rowsPanelHeaders: undefined,
       bodyData: undefined,
-      totalRowsNumber: undefined,
+      totalPagesCached: undefined,
     })
   }
 
@@ -139,13 +138,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { headersData, rowsPanelHeaders, bodyData, totalRowsNumber } = this.state
-
-    let pageCount = 0
-
-    if (totalRowsNumber) {
-      pageCount = Math.ceil(totalRowsNumber / this.streamMetaData.pageSize)
-    }
+    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached } = this.state
 
     return (
       <div
@@ -162,7 +155,7 @@ export default class App extends Component {
             currentPage={this.streamMetaData.pageNumber}
             headersData={headersData}
             loadNextPage ={::this.loadNextPage}
-            pageCount={pageCount}
+            pageCount={totalPagesCached}
             rowsPanelHeaders={rowsPanelHeaders}
         />
       </div>
