@@ -12,9 +12,10 @@ export default class Pivot extends Component {
     loadNextPage: PropTypes.func,
     pageCount: PropTypes.number,
     headersData: PropTypes.object,
+    totalRowsNumber: PropTypes.number,
   }
   render() {
-    const { headersData, rowsPanelHeaders, bodyData, loadNextPage, pageCount, currentPage } = this.props
+    const { headersData, rowsPanelHeaders, bodyData, loadNextPage, pageCount, currentPage, totalRowsNumber } = this.props
 
     return (
       <div>
@@ -23,6 +24,7 @@ export default class Pivot extends Component {
             headersData={headersData}
             loadNextPage ={loadNextPage}
             rowsPanelHeaders={rowsPanelHeaders}
+            totalRowsNumber={totalRowsNumber}
         />
         <Pager
             currentPage={currentPage}

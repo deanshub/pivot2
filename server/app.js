@@ -9,12 +9,15 @@ const server = require('http').Server(app)
 const io = require('socket.io')(server)
 const rxEnhancements = require('./utils/rxEnhancements.js')
 const jaqlUtils = require('./utils/jaqlUtils.js')
+const cacheUtils = require('./utils/cacheUtils.js')
 
 Rx.Observable.prototype.groupToPivotRow = rxEnhancements.groupToPivotRow
 
 function cancelStream(client) {
   client.cancelRequest = true
 }
+
+const emitEveryXPages = 1000
 
 const options = {
   delimiter : ',', // default is ,
@@ -23,7 +26,7 @@ const options = {
   enclosedChar : '"', // default is an empty string
 }
 
-io.on('connection', function(client){
+io.on('connection', function(client) {
   client.pivotsCache = {}
 
   console.log('connection')
@@ -40,17 +43,8 @@ io.on('connection', function(client){
     const lastRowIndex = jaqlUtils.getLastRowIndexFromJaql(jaqlJson)
 
     const jaqlHash = jaqlUtils.getJaqlHash(jaqlJson)
-    if (!client.pivotsCache[jaqlHash]) {
-      client.pivotsCache[jaqlHash] = {}
-    }
 
-    if (!client.pivotsCache[jaqlHash].rawData) {
-      client.pivotsCache[jaqlHash].rawData = []
-    }
-
-    if (!client.pivotsCache[jaqlHash].dataDictionary) {
-      client.pivotsCache[jaqlHash].dataDictionary = []
-    }
+    let pivotCache = cacheUtils.initCacheForJaql(client, jaqlHash)
 
     const pageSize = jaqlJson.count
     const wantedOffset = jaqlJson.offset
@@ -60,7 +54,7 @@ io.on('connection', function(client){
 
     client.cancelRequest = false
 
-    if (!client.pivotsCache[jaqlHash].streamObserver) {
+    if (!pivotCache.streamObserver) {
       const jaqlResultStream = rxEnhancements.fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
         // form: jaql,
         form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
@@ -69,89 +63,59 @@ io.on('connection', function(client){
         },
       }).pipe(csvStream))
 
-      client.pivotsCache[jaqlHash].currRowIndex = 0
-      client.pivotsCache[jaqlHash].numOfRowsCached = -1
-      client.pivotsCache[jaqlHash].lastRow = []
+      cacheUtils.initCacheForStream(pivotCache)
 
-      client.pivotsCache[jaqlHash].streamObserver = jaqlResultStream.map((data) => {
+      pivotCache.streamObserver = jaqlResultStream.map((data) => {
         // outputs an object containing a set of key/value pair representing a line found in the csv file.
         // TODO: change csvStream to create the array automatically
         const row = Object.keys(data).map(header=>data[header])
 
         return row
       }).do((data)=> {
-        client.pivotsCache[jaqlHash].rawData.push(data)
+        cacheUtils.addDataToCache(pivotCache, data)
       }).groupToPivotRow(lastRowIndex)
       .filter((pivotRow) => {
         return pivotRow && pivotRow.length
       })
       .do((pivotRow) => {
-        client.pivotsCache[jaqlHash].dataDictionary.push({
-          start: client.pivotsCache[jaqlHash].currRowIndex,
-          end: client.pivotsCache[jaqlHash].currRowIndex + pivotRow.length - 1,
-        })
-
-        client.pivotsCache[jaqlHash].currRowIndex += pivotRow.length
-
-        client.pivotsCache[jaqlHash].numOfRowsCached += 1
+        cacheUtils.addPivotRowToDataDictionary(pivotCache, pivotRow)
       }).share()
     }
 
-    if (client.pivotsCache[jaqlHash].dataDictionary[wantedOffset] &&
-        client.pivotsCache[jaqlHash].dataDictionary[wantedOffset + pageSize]) {
-      client.emit('totalPagesCached', Math.ceil(client.pivotsCache[jaqlHash].dataDictionary.length / pageSize))
+    // If the wanted page is already cached
+    if (cacheUtils.checkIfPageCached(pivotCache, wantedOffset, pageSize)) {
+      // Emit total number of pages being cached
+      cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
 
-      let rawDataOffset = client.pivotsCache[jaqlHash].dataDictionary[wantedOffset].start
-
-
-      for (let pivotRowIndex = 0; pivotRowIndex < pageSize; pivotRowIndex++) {
-        const pivotOffset = wantedOffset + pivotRowIndex
-
-        const pivotRowDataChunksCount =
-          (client.pivotsCache[jaqlHash].dataDictionary[pivotOffset].end - client.pivotsCache[jaqlHash].dataDictionary[pivotOffset].start) + 1
-
-        let currPivotRow = []
-
-        for (let dataChunksIndex = 0; dataChunksIndex < pivotRowDataChunksCount; dataChunksIndex++) {
-          currPivotRow.push(client.pivotsCache[jaqlHash].rawData[rawDataOffset])
-        }
-
-        client.emit('streamChunk', currPivotRow)
-
-        rawDataOffset = rawDataOffset + pivotRowDataChunksCount
-      }
-
-
+      // Emits the cached page to the client
+      cacheUtils.emitCachedPage(client, pivotCache, wantedOffset, pageSize)
     } else {
-      client.pivotsCache[jaqlHash].streamObserver
+
+      pivotCache.streamObserver
       .filter(() => {
-        return client.pivotsCache[jaqlHash].numOfRowsCached % pageSize === 0
+        return cacheUtils.fullPageCached(pivotCache, pageSize)
       }).map(() => {
-        return Math.floor(client.pivotsCache[jaqlHash].numOfRowsCached / pageSize)
+        return cacheUtils.getCachedPagesNum(pivotCache, pageSize)
       })
-      .subscribe((totalPagesCached) => {
-        if (totalPagesCached % 1000 === 0) {
-          client.emit('totalPagesCached', totalPagesCached)
-        }
+      .subscribe(() => {
+        cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages)
       }, (err) => {
         console.log(err)
       }, () => {
-        client.emit('totalPagesCached', Math.ceil(client.pivotsCache[jaqlHash].numOfRowsCached / pageSize))
+        cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
       })
 
-      client.pivotsCache[jaqlHash].streamObserver
+      pivotCache.streamObserver
       .filter(() => {
-        return (client.pivotsCache[jaqlHash].numOfRowsCached >= wantedOffset &&
-          client.pivotsCache[jaqlHash].numOfRowsCached < wantedOffset + pageSize)
+        return cacheUtils.wantedPageValues(pivotCache, wantedOffset, pageSize)
       })
       .subscribe((pivotRow) => {
-        // setTimeout(()=>{
         client.emit('streamChunk', pivotRow)
-        // }, 0)
       }, (err) => {
         console.log(err)
       }, () => {
-        // client.emit('totalPagesCached', Math.ceil(pivotsCache[jaqlHash].numOfRowsCached / pageSize))
+        // client.emit('totalRowsNumber', client.pivotsCache[jaqlHash].numOfRowsCached)
+        client.emit('pivotFullyCached', true)
       })
     }
   })

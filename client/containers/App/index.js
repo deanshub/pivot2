@@ -28,12 +28,14 @@ export default class App extends Component {
 
   handleWebworkerMessage({data}){
     const { type, ...restData } = data
-    if (type==='startQuery'){
+    if (type === 'startQuery'){
       this.startQuery(restData)
-    }else if (type==='onChunks' && !this.streamStopped){
+    } else if (type === 'onChunks' && !this.streamStopped){
       this.onChunks(restData.headersData, restData.rowsPanelHeaders, restData.bodyData, restData.end)
     } else if (type === 'totalPagesCached') {
       this.setPagesCount(restData.totalPagesCached)
+    } else if (type === 'totalRowsNumber') {
+      this.setTotalRowsNumber(restData.totalRowsNumber)
     }
   }
 
@@ -57,6 +59,12 @@ export default class App extends Component {
       parsedJaql,
       datasource,
       hierarchy,
+    })
+  }
+
+  setTotalRowsNumber(totalRowsNumber) {
+    this.setState({
+      totalRowsNumber,
     })
   }
 
@@ -138,7 +146,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached } = this.state
+    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached, totalRowsNumber} = this.state
 
     return (
       <div
@@ -157,6 +165,7 @@ export default class App extends Component {
             loadNextPage ={::this.loadNextPage}
             pageCount={totalPagesCached}
             rowsPanelHeaders={rowsPanelHeaders}
+            totalRowsNumber={totalRowsNumber}
         />
       </div>
     )

@@ -1,7 +1,9 @@
 import Rx from 'rxjs/Rx'
 import IO from 'socket.io-client'
-import transformer from '../../store/transformer.js'
 import rxExtensions from '../../Utils/rxExtensions.js'
+import pivotCacheUtils from '../../Utils/pivotCacheUtils.js'
+import transformer from '../../store/transformer.js'
+
 const socket = IO(`${location.protocol}//${location.host}`)
 
 //TODO: make this configurable
@@ -30,9 +32,19 @@ socket.on('totalPagesCached', (totalPagesCached) => {
   })
 })
 
+socket.on('totalRowsNumber', (totalRowsNumber) => {
+  self.postMessage({
+    type:'totalRowsNumber',
+    totalRowsNumber,
+  })
+})
+
+
 const subscriber = result
 .filter(chunk=>!chunk.end)
-.do(updatePivotModel)
+.do((pivotRow) => {
+  pivotCacheUtils.updatePivotModel(tempHierarchy, tempHeadersData, pivotRow)
+})
 // .bufferTime(maxChunksLimit)
 .pivotRowsBuffer(maxChunksLimit)
 // .concatAll()
@@ -73,12 +85,3 @@ self.addEventListener('message', (e) => {
     socket.emit('cancelStream')
   }
 })
-
-function updatePivotModel(pivotRow) {
-  pivotRow.forEach((dataChunk) => {
-    const rowPath = transformer.getRowPath(tempHierarchy, dataChunk)
-    const colPath = transformer.getColPath(tempHierarchy, dataChunk)
-    tempHeadersData = transformer.upsertRow(tempHeadersData, rowPath, dataChunk)
-    tempHeadersData = transformer.upsertCol(tempHeadersData, colPath, dataChunk)
-  })
-}
