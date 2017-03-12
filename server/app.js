@@ -10,6 +10,7 @@ const io = require('socket.io')(server)
 const rxEnhancements = require('./utils/rxEnhancements.js')
 const jaqlUtils = require('./utils/jaqlUtils.js')
 const cacheUtils = require('./utils/cacheUtils.js')
+const sisenseUtils = require('./utils/sisenseUtils.js')
 
 Rx.Observable.prototype.groupToPivotRow = rxEnhancements.groupToPivotRow
 
@@ -42,9 +43,7 @@ io.on('connection', function(client) {
 
     const lastRowIndex = jaqlUtils.getLastRowIndexFromJaql(jaqlJson)
 
-    const jaqlHash = jaqlUtils.getJaqlHash(jaqlJson)
 
-    let pivotCache = cacheUtils.initCacheForJaql(client, jaqlHash)
 
     const pageSize = jaqlJson.count
     const wantedOffset = jaqlJson.offset
@@ -54,70 +53,75 @@ io.on('connection', function(client) {
 
     client.cancelRequest = false
 
-    if (!pivotCache.streamObserver) {
-      const jaqlResultStream = rxEnhancements.fromStream(request.post(`${baseUrl}/api/datasources/${datasource}/jaql/csv`, {
-        // form: jaql,
-        form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
-        headers: {
-          'Authorization': token,
-        },
-      }).pipe(csvStream))
+    sisenseUtils.getRevisionId(baseUrl, datasource, token).then((revisionId) => {
+      const jaqlHash = jaqlUtils.getJaqlHash(jaqlJson, revisionId)
+      const pivotCache = cacheUtils.initCacheForJaql(client, jaqlHash)
 
-      cacheUtils.initCacheForStream(pivotCache)
+      if (!pivotCache.streamObserver) {
+        const jaqlResultStream = rxEnhancements.fromStream(request.post(`${baseUrl}/api/datasources/${datasource.id}/jaql/csv`, {
+          // form: jaql,
+          form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
+          headers: {
+            'Authorization': token,
+          },
+        }).pipe(csvStream))
 
-      pivotCache.streamObserver = jaqlResultStream.map((data) => {
-        // outputs an object containing a set of key/value pair representing a line found in the csv file.
-        // TODO: change csvStream to create the array automatically
-        const row = Object.keys(data).map(header=>data[header])
+        cacheUtils.initCacheForStream(pivotCache)
 
-        return row
-      }).do((data)=> {
-        cacheUtils.addDataToCache(pivotCache, data)
-      }).groupToPivotRow(lastRowIndex)
-      .filter((pivotRow) => {
-        return pivotRow && pivotRow.length
-      })
-      .do((pivotRow) => {
-        cacheUtils.addPivotRowToDataDictionary(pivotCache, pivotRow)
-      }).share()
-    }
+        pivotCache.streamObserver = jaqlResultStream.map((data) => {
+          // outputs an object containing a set of key/value pair representing a line found in the csv file.
+          // TODO: change csvStream to create the array automatically
+          const row = Object.keys(data).map(header=>data[header])
 
-    // If the wanted page is already cached
-    if (cacheUtils.checkIfPageCached(pivotCache, wantedOffset, pageSize)) {
-      // Emit total number of pages being cached
-      cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
+          return row
+        }).do((data)=> {
+          cacheUtils.addDataToCache(pivotCache, data)
+        }).groupToPivotRow(lastRowIndex)
+        .filter((pivotRow) => {
+          return pivotRow && pivotRow.length
+        })
+        .do((pivotRow) => {
+          cacheUtils.addPivotRowToDataDictionary(pivotCache, pivotRow)
+        }).share()
+      }
 
-      // Emits the cached page to the client
-      cacheUtils.emitCachedPage(client, pivotCache, wantedOffset, pageSize)
-    } else {
-
-      pivotCache.streamObserver
-      .filter(() => {
-        return cacheUtils.fullPageCached(pivotCache, pageSize)
-      }).map(() => {
-        return cacheUtils.getCachedPagesNum(pivotCache, pageSize)
-      })
-      .subscribe(() => {
-        cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages)
-      }, (err) => {
-        console.log(err)
-      }, () => {
+      // If the wanted page is already cached
+      if (cacheUtils.checkIfPageCached(pivotCache, wantedOffset, pageSize)) {
+        // Emit total number of pages being cached
         cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
-      })
 
-      pivotCache.streamObserver
-      .filter(() => {
-        return cacheUtils.wantedPageValues(pivotCache, wantedOffset, pageSize)
-      })
-      .subscribe((pivotRow) => {
-        client.emit('streamChunk', pivotRow)
-      }, (err) => {
-        console.log(err)
-      }, () => {
-        // client.emit('totalRowsNumber', client.pivotsCache[jaqlHash].numOfRowsCached)
-        client.emit('pivotFullyCached', true)
-      })
-    }
+        // Emits the cached page to the client
+        cacheUtils.emitCachedPage(client, pivotCache, wantedOffset, pageSize)
+      } else {
+        pivotCache.streamObserver
+        .filter(() => {
+          return cacheUtils.fullPageCached(pivotCache, pageSize)
+        }).map(() => {
+          return cacheUtils.getCachedPagesNum(pivotCache, pageSize)
+        })
+        .subscribe(() => {
+          cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages)
+        }, (err) => {
+          console.log(err)
+        }, () => {
+          cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
+        })
+
+        pivotCache.streamObserver
+        .filter(() => {
+          return cacheUtils.wantedPageValues(pivotCache, wantedOffset, pageSize)
+        })
+        .subscribe((pivotRow) => {
+          client.emit('streamChunk', pivotRow)
+        }, (err) => {
+          console.log(err)
+        }, () => {
+          // client.emit('totalRowsNumber', client.pivotsCache[jaqlHash].numOfRowsCached)
+          client.emit('pivotFullyCached', true)
+        })
+      }
+    })
+
   })
 
   client.on('cancelStream'  , ()=> cancelStream(client))

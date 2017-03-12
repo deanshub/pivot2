@@ -43,7 +43,7 @@ export default {
     }
 
     const parsedJaql = `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`
-    const datasource = jaqlJson.datasource.id || jaqlJson.datasource.fullname
+    const datasource = jaqlJson.datasource
 
     const hierarchy = jaqlJson.metadata.reduce((res, curr)=>{
       if (curr && curr.field){

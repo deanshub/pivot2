@@ -70,6 +70,8 @@ function emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages) {
 
   if (shouldEmitPages) {
     client.emit('totalPagesCached', totalPagesCached)
+
+    // client.emit('totalRowsNumber', pivotCache.numOfRowsCached)
   }
 }
 

@@ -20,17 +20,69 @@ function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
   })
 }
 
-function getJaqlHash(jaql) {
-  const jaqlToHash = {
-    datasource: jaql.datasource,
-    metadata: getSpecificPanelFromJaql(jaql, 'rows'),
-  }
+function getJaqlHash(jaql, revisionId) {
+  const jaqlToHash = cleanJaql(jaql)
+
+  jaqlToHash.revisionId = revisionId
 
   return hash(jaqlToHash)
+}
+
+const blacklist = [
+  'explicit',
+  'grandTotals',
+  'format',
+  'offset',
+  'count',
+  'field',
+  'handlers',
+  'merged',
+  'datatype',
+  'multiSelection',
+  'isMaskedResult',
+  'isMaskedResponse',
+  'filename',
+  'download',
+  'widget',
+  'dashboard',
+  'culture',
+  'isCascading',
+  'collapsed',
+  'table',
+  'custom',
+  'title',
+  'column',
+]
+
+function cleanJaql(origJaql) {
+  const jaqlToClean = Object.assign({}, origJaql)
+
+  let currObject
+
+  for (let key in jaqlToClean) {
+    if (!jaqlToClean.hasOwnProperty(key)) {
+      continue
+    }
+
+    currObject = jaqlToClean[key]
+
+    if (blacklist.indexOf(key) > -1 || key === 'disabled' && currObject === false) {
+      delete jaqlToClean[key]
+      continue
+    }
+
+    // continue drilling
+    if (Array.isArray(currObject) || typeof (currObject) === 'object') {
+      cleanJaql(currObject)
+    }
+  }
+
+  return jaqlToClean
 }
 
 module.exports = {
   getLastRowIndexFromJaql,
   getSpecificPanelFromJaql,
   getJaqlHash,
+  cleanJaql,
 }
