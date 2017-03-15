@@ -13,9 +13,10 @@ export default class Pivot extends Component {
     pageCount: PropTypes.number,
     headersData: PropTypes.object,
     totalRowsNumber: PropTypes.number,
+    pivotFullyCached: PropTypes.bool,
   }
   render() {
-    const { headersData, rowsPanelHeaders, bodyData, loadNextPage, pageCount, currentPage, totalRowsNumber } = this.props
+    const { headersData, rowsPanelHeaders, bodyData, loadNextPage, pageCount, currentPage, totalRowsNumber, pivotFullyCached } = this.props
 
     return (
       <div>
@@ -29,6 +30,7 @@ export default class Pivot extends Component {
         <Pager
             currentPage={currentPage}
             pageCount={pageCount}
+            pivotFullyCached={pivotFullyCached}
         />
       </div>
     )

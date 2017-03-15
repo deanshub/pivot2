@@ -39,6 +39,13 @@ socket.on('totalRowsNumber', (totalRowsNumber) => {
   })
 })
 
+socket.on('pivotFullyCached', (pivotFullyCached) => {
+  self.postMessage({
+    type:'pivotFullyCached',
+    pivotFullyCached,
+  })
+})
+
 
 const subscriber = result
 .filter(chunk=>!chunk.end)

@@ -6,20 +6,25 @@ export default class Pager extends Component {
   static propTypes = {
     currentPage: PropTypes.number,
     pageCount: PropTypes.number,
+    pivotFullyCached: PropTypes.bool,
   }
   static defaultProps = {
     currentPage:1,
   }
 
   render(){
-    const {currentPage, pageCount} = this.props
+    const {currentPage, pageCount, pivotFullyCached} = this.props
     return (
       <div className={classnames(style.container)}>
         <div>&lt;&lt;</div>
         <div>&lt;</div>
         <div>{currentPage} from {pageCount}</div>
         <div>&gt;</div>
-        <div>&gt;&gt;</div>
+        {
+          pivotFullyCached ?
+          <div>&gt;&gt;</div>
+          : null
+        }
       </div>
     )
   }

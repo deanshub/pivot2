@@ -14,9 +14,6 @@ const sisenseUtils = require('./utils/sisenseUtils.js')
 
 Rx.Observable.prototype.groupToPivotRow = rxEnhancements.groupToPivotRow
 
-function cancelStream(client) {
-  client.cancelRequest = true
-}
 
 const emitEveryXPages = 1000
 
@@ -26,6 +23,9 @@ const options = {
   escapeChar : '"', // default is an empty string
   enclosedChar : '"', // default is an empty string
 }
+
+
+
 
 io.on('connection', function(client) {
   client.pivotsCache = {}
@@ -89,35 +89,11 @@ io.on('connection', function(client) {
         // Emits the cached page to the client
         cacheUtils.emitCachedPage(client, pivotCache, wantedOffset, pageSize)
       } else {
-        pivotCache.streamObserver
-        .filter(() => {
-          return cacheUtils.fullPageCached(pivotCache, pageSize)
-        }).map(() => {
-          return cacheUtils.getCachedPagesNum(pivotCache, pageSize)
-        })
-        .subscribe(() => {
-          cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages)
-        }, (err) => {
-          console.log(err)
-        }, () => {
-          cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
-        })
+        streamPageNumbers(pivotCache, pageSize, client)
 
-        pivotCache.streamObserver
-        .filter(() => {
-          return cacheUtils.wantedPageValues(pivotCache, wantedOffset, pageSize)
-        })
-        .subscribe((pivotRow) => {
-          client.emit('streamChunk', pivotRow)
-        }, (err) => {
-          console.log(err)
-        }, () => {
-          // client.emit('totalRowsNumber', client.pivotsCache[jaqlHash].numOfRowsCached)
-          client.emit('pivotFullyCached', true)
-        })
+        streamPageData(pivotCache, wantedOffset, pageSize, client)
       }
     })
-
   })
 
   client.on('cancelStream'  , ()=> cancelStream(client))
@@ -135,3 +111,38 @@ app.use(express.static(path.join(__dirname, 'static')))
 server.listen(9999, function () {
   console.log('Server port 9999')
 })
+
+function cancelStream(client) {
+  client.cancelRequest = true
+}
+
+function streamPageNumbers(pivotCache, pageSize, client) {
+  pivotCache.streamObserver
+  .filter(() => {
+    return cacheUtils.fullPageCached(pivotCache, pageSize)
+  }).map(() => {
+    return cacheUtils.getCachedPagesNum(pivotCache, pageSize)
+  })
+  .subscribe(() => {
+    cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages)
+  }, (err) => {
+    console.log(err)
+  }, () => {
+    cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
+  })
+}
+
+function streamPageData(pivotCache, wantedOffset, pageSize, client) {
+  pivotCache.streamObserver
+  .filter(() => {
+    return cacheUtils.wantedPageValues(pivotCache, wantedOffset, pageSize)
+  })
+  .subscribe((pivotRow) => {
+    client.emit('streamChunk', pivotRow)
+  }, (err) => {
+    console.log(err)
+  }, () => {
+    // client.emit('totalRowsNumber', client.pivotsCache[jaqlHash].numOfRowsCached)
+    client.emit('pivotFullyCached', true)
+  })
+}

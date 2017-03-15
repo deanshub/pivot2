@@ -36,6 +36,8 @@ export default class App extends Component {
       this.setPagesCount(restData.totalPagesCached)
     } else if (type === 'totalRowsNumber') {
       this.setTotalRowsNumber(restData.totalRowsNumber)
+    } else if (type === 'pivotFullyCached') {
+      this.setPivotFullyCached(restData.pivotFullyCached)
     }
   }
 
@@ -81,6 +83,12 @@ export default class App extends Component {
   setPagesCount(totalPagesCached) {
     this.setState({
       totalPagesCached,
+    })
+  }
+
+  setPivotFullyCached(pivotFullyCached) {
+    this.setState({
+      pivotFullyCached,
     })
   }
 
@@ -146,7 +154,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached, totalRowsNumber} = this.state
+    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached, totalRowsNumber, pivotFullyCached} = this.state
 
     return (
       <div
@@ -164,6 +172,7 @@ export default class App extends Component {
             headersData={headersData}
             loadNextPage ={::this.loadNextPage}
             pageCount={totalPagesCached}
+            pivotFullyCached={pivotFullyCached}
             rowsPanelHeaders={rowsPanelHeaders}
             totalRowsNumber={totalRowsNumber}
         />
