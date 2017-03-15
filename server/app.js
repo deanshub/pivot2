@@ -43,24 +43,20 @@ io.on('connection', function(client) {
 
     const lastRowIndex = jaqlUtils.getLastRowIndexFromJaql(jaqlJson)
 
-
-
     const pageSize = jaqlJson.count
     const wantedOffset = jaqlJson.offset
-
-    jaqlJson.offset = undefined
-    jaqlJson.count = undefined
 
     client.cancelRequest = false
 
     sisenseUtils.getRevisionId(baseUrl, datasource, token).then((revisionId) => {
       const jaqlHash = jaqlUtils.getJaqlHash(jaqlJson, revisionId)
+      const pivotJaql = jaqlUtils.clearJaqlToPivot(jaqlJson)
       const pivotCache = cacheUtils.initCacheForJaql(client, jaqlHash)
 
       if (!pivotCache.streamObserver) {
         const jaqlResultStream = rxEnhancements.fromStream(request.post(`${baseUrl}/api/datasources/${datasource.id}/jaql/csv`, {
           // form: jaql,
-          form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(jaqlJson)))}`,
+          form: `data=${encodeURIComponent(encodeURIComponent(JSON.stringify(pivotJaql)))}`,
           headers: {
             'Authorization': token,
           },

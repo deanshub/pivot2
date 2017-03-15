@@ -1,34 +1,6 @@
 const hash = require('object-hash')
 
-function getLastRowIndexFromJaql(jaqlQueryData) {
-  const rowsMetaData = getSpecificPanelFromJaql(jaqlQueryData, 'rows')
-
-  let lastRowIndex = 0
-
-  rowsMetaData.forEach((currRowMeta) => {
-    if (currRowMeta.field && currRowMeta.field.index > lastRowIndex) {
-      lastRowIndex = currRowMeta.field.index
-    }
-  })
-
-  return lastRowIndex
-}
-
-function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
-  return jaqlQueryData.metadata.filter((currMeta) => {
-    return currMeta.panel === wantedPanel
-  })
-}
-
-function getJaqlHash(jaql, revisionId) {
-  const jaqlToHash = cleanJaql(jaql)
-
-  jaqlToHash.revisionId = revisionId
-
-  return hash(jaqlToHash)
-}
-
-const blacklist = [
+const jaqlHashBlacklist = [
   'explicit',
   'grandTotals',
   'format',
@@ -54,35 +26,92 @@ const blacklist = [
   'column',
 ]
 
-function cleanJaql(origJaql) {
+const jaqlPivotBlacklist = [
+  'explicit',
+  'grandTotals',
+  'offset',
+  'count',
+  'handlers',
+  'isMaskedResult',
+  'isMaskedResponse',
+  'filename',
+  'download',
+  'culture',
+  'isCascading',
+  'collapsed',
+  'title',
+  'sortDetails',
+  'sort',
+]
+
+function getLastRowIndexFromJaql(jaqlQueryData) {
+  const rowsMetaData = getSpecificPanelFromJaql(jaqlQueryData, 'rows')
+
+  let lastRowIndex = 0
+
+  rowsMetaData.forEach((currRowMeta) => {
+    if (currRowMeta.field && currRowMeta.field.index > lastRowIndex) {
+      lastRowIndex = currRowMeta.field.index
+    }
+  })
+
+  return lastRowIndex
+}
+
+function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
+  return jaqlQueryData.metadata.filter((currMeta) => {
+    return currMeta.panel === wantedPanel
+  })
+}
+
+function getJaqlHash(jaql, revisionId) {
+  const jaqlToHash = cleanJaqlForHash(jaql)
+
+  jaqlToHash.revisionId = revisionId
+
+  return hash(jaqlToHash)
+}
+
+function cleanJaqlForHash(origJaql) {
   const jaqlToClean = Object.assign({}, origJaql)
 
+  return clearJaql(jaqlToClean, jaqlHashBlacklist)
+}
+
+function clearJaqlToPivot(origJaql) {
+  const jaqlToClean = Object.assign({}, origJaql)
+
+  return clearJaql(jaqlToClean, jaqlPivotBlacklist)
+}
+
+function clearJaql(origJaql, blacklist) {
   let currObject
 
-  for (let key in jaqlToClean) {
-    if (!jaqlToClean.hasOwnProperty(key)) {
+  for (let key in origJaql) {
+    if (!origJaql.hasOwnProperty(key)) {
       continue
     }
 
-    currObject = jaqlToClean[key]
+    currObject = origJaql[key]
 
     if (blacklist.indexOf(key) > -1 || key === 'disabled' && currObject === false) {
-      delete jaqlToClean[key]
+      delete origJaql[key]
       continue
     }
 
     // continue drilling
     if (Array.isArray(currObject) || typeof (currObject) === 'object') {
-      cleanJaql(currObject)
+      clearJaql(currObject, blacklist)
     }
   }
-
-  return jaqlToClean
+  return origJaql
 }
 
 module.exports = {
   getLastRowIndexFromJaql,
   getSpecificPanelFromJaql,
   getJaqlHash,
-  cleanJaql,
+  clearJaql,
+  cleanJaqlForHash,
+  clearJaqlToPivot,
 }
