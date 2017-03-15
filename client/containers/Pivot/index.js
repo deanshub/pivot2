@@ -4,14 +4,14 @@ import Pager from '../../components/Pager'
 
 export default class Pivot extends Component {
   static propTypes = {
-    rowsPanelHeaders: PropTypes.array,
     bodyData: PropTypes.array,
     currentPage: PropTypes.number,
     loadNextPage: PropTypes.func,
     pageCount: PropTypes.number,
-    headersData: PropTypes.object,
-    totalRowsNumber: PropTypes.number,
     pivotFullyCached: PropTypes.bool,
+    headersData: PropTypes.object,
+    rowsPanelHeaders: PropTypes.array,
+    totalRowsNumber: PropTypes.number,
   }
   render() {
     const { headersData, rowsPanelHeaders, bodyData, loadNextPage, pageCount, currentPage, totalRowsNumber, pivotFullyCached } = this.props
@@ -22,6 +22,7 @@ export default class Pivot extends Component {
             bodyData={bodyData}
             headersData={headersData}
             loadNextPage ={loadNextPage}
+            pivotFullyCached={pivotFullyCached}
             rowsPanelHeaders={rowsPanelHeaders}
             totalRowsNumber={totalRowsNumber}
         />

@@ -16,6 +16,7 @@ export default class PivotView extends Component {
     bodyData: PropTypes.array,
     headersData: PropTypes.object,
     loadNextPage: PropTypes.func,
+    pivotFullyCached: PropTypes.bool,
     rowsPanelHeaders: PropTypes.array,
   }
 

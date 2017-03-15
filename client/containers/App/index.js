@@ -17,6 +17,7 @@ export default class App extends Component {
       bodyData: undefined,
       totalPagesCached: undefined,
       totalRowsNumber: undefined,
+      pivotFullyCached:true,
     }
 
     this.panelWorker = new PanelWorker()
@@ -113,7 +114,7 @@ export default class App extends Component {
     }
 
     this.streamStopped = false
-    this.resetPivotData()
+    this.resetPivotData({pivotFullyCached:false})
     this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber})
   }
 
@@ -124,7 +125,7 @@ export default class App extends Component {
     })
   }
 
-  resetPivotData() {
+  resetPivotData(extra) {
     this.setState({
       hierarchy: undefined,
       data: [],
@@ -133,6 +134,8 @@ export default class App extends Component {
       bodyData: undefined,
       totalPagesCached: undefined,
       totalRowsNumber: undefined,
+      pivotFullyCached:true,
+      ...extra,
     })
   }
 
