@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import classnames from 'classnames'
-// import Sisense, {Widget} from '../../components/Sisense'
 import Pivot from '../Pivot'
 import QueryPanel from '../../components/QueryPanel'
 import style from './style.css'
@@ -11,6 +10,13 @@ export default class App extends Component {
     super(props, context)
 
     this.state = {
+      hierarchy: undefined,
+      data: [],
+      headersData: undefined,
+      rowsPanelHeaders: [],
+      bodyData: undefined,
+      totalPagesCached: undefined,
+      totalRowsNumber: undefined,
     }
 
     this.panelWorker = new PanelWorker()
@@ -39,14 +45,14 @@ export default class App extends Component {
     }
   }
 
-  startQuery(data) {
+  startQuery(queryData) {
     const {
       baseUrl,
       fullToken,
       parsedJaql,
       datasource,
       hierarchy,
-    } = data
+    } = queryData
 
     this.setState({
       hierarchy,
@@ -112,12 +118,13 @@ export default class App extends Component {
 
   resetPivotData() {
     this.setState({
-      hierarchy: [],
+      hierarchy: undefined,
       data: [],
       headersData: undefined,
-      rowsPanelHeaders: undefined,
+      rowsPanelHeaders: [],
       bodyData: undefined,
       totalPagesCached: undefined,
+      totalRowsNumber: undefined,
     })
   }
 

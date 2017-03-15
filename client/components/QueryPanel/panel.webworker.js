@@ -45,9 +45,7 @@ const subscriber = result
 .do((pivotRow) => {
   pivotCacheUtils.updatePivotModel(tempHierarchy, tempHeadersData, pivotRow)
 })
-// .bufferTime(maxChunksLimit)
 .pivotRowsBuffer(maxChunksLimit)
-// .concatAll()
 .filter(chunks=>chunks.length>0)
 .subscribe((chunks) => {
   const headersData = transformer.getHeadersData(tempHeadersData, tempHierarchy)

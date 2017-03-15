@@ -6,7 +6,7 @@ import PivotThead from '../PivotThead'
 import PivotBody from '../PivotBody'
 import PivotCornerHeader from '../PivotCornerHeader'
 import PivotColsHeader from '../PivotColsHeader'
-import helpers from '../../Utils/helpers'
+import helpers from '../../utils/helpers'
 import shallowCompare from 'react-addons-shallow-compare'
 import R from 'ramda'
 import Rx from 'rxjs/Rx'
@@ -24,7 +24,7 @@ export default class PivotView extends Component {
 
   constructor(props, context) {
     super(props, context)
-
+    this.handleResize = ()=>{this.forceUpdate.bind(this)}
     this.state = {
       headerSizes: {
       },
@@ -78,65 +78,12 @@ export default class PivotView extends Component {
     })
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return shallowCompare(this, nextProps, nextState)
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize)
   }
 
   componentWillMount() {
-    // console.log();
-    window.addEventListener('resize', ()=>{this.forceUpdate()})
-  }
-
-  componentDidUpdate() {
-    const { headersData, rowsPanelHeaders } = this.props
-    const { userDefinedSize } = this.state
-
-    let stateToChange = {}
-
-    if (headersData && !userDefinedSize) {
-      const pivotHiddenThead = ReactDOM.findDOMNode(this.pivotHiddenThead)
-      const thNewSizes = this.getHeadersSizes(pivotHiddenThead)
-
-      if (!R.equals(this.state.headerSizes.thSizes, thNewSizes)) {
-        const tableSizes = {
-          width: this.container.offsetWidth,
-        }
-
-        const cornerSizes = this.getCornerSizes(pivotHiddenThead, headersData.rowsHeaders.length)
-
-        stateToChange.headerSizes = {
-          thSizes : thNewSizes,
-          tableSizes,
-          cornerSizes,
-        }
-      }
-
-      const newStickyHeaderWrapperStyle =
-        this.getStickyHeaderWrapperSizes(this.pivotScrollWrapper, pivotHiddenThead)
-
-      if (!R.equals(this.state.stickyHeaderWrapperStyle, newStickyHeaderWrapperStyle)) {
-        stateToChange.stickyHeaderWrapperStyle = newStickyHeaderWrapperStyle
-      }
-    }
-
-    if (rowsPanelHeaders) {
-      const pivotBody = ReactDOM.findDOMNode(this.pivotBody)
-      const rowsPanelNewSizes = this.getRowPanelSizes(pivotBody)
-
-      if (!R.equals(this.state.rowsPanelSizes, rowsPanelNewSizes)) {
-        stateToChange.rowsPanelSizes = rowsPanelNewSizes
-      }
-
-      const newStickyRowsStyle = this.getStickyRowsStyles(this.container)
-
-      if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
-        stateToChange.stickyRowsStyle = newStickyRowsStyle
-      }
-    }
-
-    if (Object.keys(stateToChange).length) {
-      this.setState(stateToChange)
-    }
+    window.addEventListener('resize', this.handleResize)
   }
 
   componentDidMount() {
@@ -181,6 +128,69 @@ export default class PivotView extends Component {
     .subscribe((incrementPart) => {
       pivotScrollWrapper.scrollTop += incrementPart
     })
+
+    this.remessure()
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return shallowCompare(this, nextProps, nextState)
+  }
+
+  componentDidUpdate() {
+    this.remessure()
+  }
+
+  remessure() {
+    setTimeout(()=>{
+      const { headersData, rowsPanelHeaders } = this.props
+      const { userDefinedSize } = this.state
+
+      let stateToChange = {}
+
+      const pivotHiddenThead = ReactDOM.findDOMNode(this.pivotHiddenThead)
+      const thNewSizes = this.getHeadersSizes(pivotHiddenThead)
+
+      if (headersData && !userDefinedSize) {
+        if (!R.equals(this.state.headerSizes.thSizes, thNewSizes)) {
+          const tableSizes = {
+            width: this.container.offsetWidth,
+          }
+
+          const cornerSizes = this.getCornerSizes(pivotHiddenThead, headersData.rowsHeaders.length)
+
+          stateToChange.headerSizes = {
+            thSizes : thNewSizes,
+            tableSizes,
+            cornerSizes,
+          }
+        }
+
+        const newStickyHeaderWrapperStyle =
+        this.getStickyHeaderWrapperSizes(this.pivotScrollWrapper, pivotHiddenThead)
+
+        if (!R.equals(this.state.stickyHeaderWrapperStyle, newStickyHeaderWrapperStyle)) {
+          stateToChange.stickyHeaderWrapperStyle = newStickyHeaderWrapperStyle
+        }
+      }
+
+      if (rowsPanelHeaders) {
+        const pivotBody = ReactDOM.findDOMNode(this.pivotBody)
+        const rowsPanelNewSizes = this.getRowPanelSizes(pivotBody)
+
+        if (!R.equals(this.state.rowsPanelSizes, rowsPanelNewSizes)) {
+          stateToChange.rowsPanelSizes = rowsPanelNewSizes
+        }
+
+        const newStickyRowsStyle = this.getStickyRowsStyles(this.container)
+        if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
+          stateToChange.stickyRowsStyle = newStickyRowsStyle
+        }
+      }
+
+      if (Object.keys(stateToChange).length) {
+        this.setState(stateToChange)
+      }
+    })
   }
 
   getCornerSizes(thead, numOfRowsHeaders) {
@@ -196,7 +206,7 @@ export default class PivotView extends Component {
     cornerWidth += 1
 
     return {
-      width: cornerWidth
+      width: cornerWidth,
     }
   }
 
@@ -332,17 +342,18 @@ export default class PivotView extends Component {
           <PivotThead
               className={classnames(style.hiddenThead)}
               headMatrix={headMatrix}
-              headerSizes={headerSizes.thSizes}
               ref={pivotHiddenThead=>this.pivotHiddenThead=pivotHiddenThead}
+              thSizes={headerSizes.thSizes}
           />
           <PivotBody
               additionalStyle={stickyRowsStyle}
               className={classnames(style.stickyRowsPanel)}
-              headerSizes={headerSizes.thSizes}
               ref={stickyRowsPanel=>this.stickyRowsPanel=stickyRowsPanel}
               rowsPanelHeaders={rowsPanelHeaders}
               rowsPanelSizes={rowsPanelSizes}
               scrollTop={scrollTop}
+              sticky
+              thSizes={headerSizes.thSizes}
               userDefinedSize={userDefinedSize}
           />
           <PivotBody
