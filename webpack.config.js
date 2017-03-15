@@ -5,7 +5,7 @@ let path = require('path')
 let NODE_ENV = JSON.stringify(process.env.NODE_ENV || 'development')
 
 let plugins = [
-  new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
+  // new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
   new webpack.DefinePlugin({
     'process.env': { NODE_ENV },
   }),
@@ -25,14 +25,6 @@ module.exports = {
   entry: {
     bundle: './index.js',
     html: './index.html',
-    vendor: [
-      'react',
-      'react-dom',
-      'react-redux',
-      'react-router',
-      'react-router-redux',
-      'redux',
-    ],
     // pivot2: './containers/Pivot/index.js',
   },
   output: {
@@ -42,10 +34,6 @@ module.exports = {
     libraryTarget: 'umd',
     library: 'Pivot2',
   },
-  // externals: {
-  //   react: 'var React',
-  //   'react/addons': 'var React',
-  // },
   module: {
     loaders: [
       {
@@ -77,7 +65,7 @@ module.exports = {
         exclude: /node_modules/,
         // loader:'babel-loader',
         loaders: [
-          'react-hot',
+          // 'react-hot',
           'babel-loader',
         ],
       },
@@ -119,6 +107,6 @@ module.exports = {
   plugins,
   devServer: {
     contentBase: './client',
-    hot: true,
+    // hot: true,
   },
 }
