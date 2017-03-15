@@ -1,6 +1,4 @@
 import React, { Component, PropTypes } from 'react'
-import classnames from 'classnames'
-import style from './style.css'
 import PivotView from '../../components/PivotView'
 import Pager from '../../components/Pager'
 

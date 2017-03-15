@@ -1,9 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import shallowCompare from 'react-addons-shallow-compare'
-import helpers from '../../Utils/helpers.js'
-import classnames from 'classnames'
-import style from './style.css'
-import ReactDraggable from 'react-draggable'
+import Row from './row'
 
 export default class PivotThead extends Component {
   static propTypes = {
@@ -12,7 +9,7 @@ export default class PivotThead extends Component {
     resizeColumn: PropTypes.func,
     scrollLeft: PropTypes.number,
     sticky: PropTypes.bool,
-    headerSizes: PropTypes.array,
+    thSizes: PropTypes.array,
     rowsHeaders: PropTypes.array,
   }
   static defaultProps = {
@@ -20,11 +17,19 @@ export default class PivotThead extends Component {
     rowsHeaders: [],
   }
 
+  componentDidMount(){
+    this.updateScrollPosition()
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState)
   }
 
   componentDidUpdate() {
+    this.updateScrollPosition()
+  }
+
+  updateScrollPosition(){
     const {scrollLeft} = this.props
 
     if (scrollLeft !== undefined) {
@@ -33,7 +38,7 @@ export default class PivotThead extends Component {
   }
 
   render() {
-    const {headMatrix, headerSizes, className, sticky, resizeColumn, rowsHeaders} = this.props
+    const {headMatrix, thSizes, className, sticky, resizeColumn} = this.props
 
     return (
       <thead
@@ -42,47 +47,16 @@ export default class PivotThead extends Component {
       >
         {
           headMatrix.map((row, rowIndex, rows)=>
-            <tr key={rowIndex}>
-            {
-              row.map((col, colIndex)=> {
-                const thStyle = rowIndex===rows.length-1 || (rowIndex===0 && colIndex<rowsHeaders.length) ?
-                  helpers.getByPath(headerSizes, `${rowIndex}.${colIndex}`)
-                  :
-                  {}
-
-                return (
-                  <th
-                      className={classnames(style.th)}
-                      colSpan={col.colspan}
-                      key={colIndex}
-                      rowSpan={col.rowspan}
-                  >
-                    <div
-                        className={classnames(style.titleDiv)}
-                        style={thStyle}
-                    >
-                      {col.displayValue}
-                    </div>
-                    {
-                      sticky && rowIndex===rows.length-1 ?
-                      <ReactDraggable
-                          axis="x"
-                          bounds={{left: thStyle?-1*thStyle.width:undefined}}
-                          onStop={(e,{x,y})=>{resizeColumn(rowIndex, colIndex, x, y)}}
-                          position={{x:0,y:0}}
-                      >
-                        <div className={classnames(style.resizeContainer)}>
-                          {/* <div className={classnames(style.resizeVisual)}/> */}
-                        </div>
-                      </ReactDraggable>
-                      :
-                      null
-                    }
-                  </th>
-                )
-              })
-            }
-            </tr>
+            <Row
+                firstRow={rowIndex===0}
+                key={rowIndex}
+                lastRow={rowIndex===rows.length-1}
+                resizeColumn={resizeColumn}
+                row={row}
+                rowIndex={rowIndex}
+                sticky={sticky}
+                thSizes={thSizes}
+            />
           )
       }
       </thead>

@@ -1,18 +1,19 @@
-import R from 'ramda'
-
 function getByPath(obj, path) {
-  return R.view(R.lensPath(path.split('.')), obj)
+  return path.split('.').reduce((res, pathPart)=>{
+    return res?res[pathPart]:undefined
+  },obj)
 }
 
 function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
+  if (!hierarchies){
+    return []
+  }
   const rowsExists = hierarchies.hierarchyRows.length>0
   const colsExists = hierarchies.hierarchyCols.length>0
   const dataExists = hierarchies.hierarchyData.length>1
 
   let headerMatrix = []
   let dataCellsAmountToAdd
-
-
 
   if (!rowsExists && !colsExists && !dataExists){
     // TODO: take care of 1 data

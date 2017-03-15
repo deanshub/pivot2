@@ -37,7 +37,8 @@ export default class PivotCornerHeader extends Component {
           >
               <PivotThead
                   headMatrix={[rowsHeaders]}
-                  headerSizes={headerSizes.thSizes}
+                  sticky
+                  thSizes={headerSizes.thSizes}
               />
           </table>
         </div>

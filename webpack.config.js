@@ -5,7 +5,6 @@ let path = require('path')
 let NODE_ENV = JSON.stringify(process.env.NODE_ENV || 'development')
 
 let plugins = [
-  // new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
   new webpack.DefinePlugin({
     'process.env': { NODE_ENV },
   }),
@@ -25,7 +24,6 @@ module.exports = {
   entry: {
     bundle: './index.js',
     html: './index.html',
-    // pivot2: './containers/Pivot/index.js',
   },
   output: {
     path: path.join(__dirname, './server/static'),
@@ -63,11 +61,7 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        // loader:'babel-loader',
-        loaders: [
-          // 'react-hot',
-          'babel-loader',
-        ],
+        loader:'babel-loader',
       },
       {
         test: /\.svg(\?.*)?$/,
@@ -107,6 +101,5 @@ module.exports = {
   plugins,
   devServer: {
     contentBase: './client',
-    // hot: true,
   },
 }

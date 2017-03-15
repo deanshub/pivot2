@@ -1,8 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import shallowCompare from 'react-addons-shallow-compare'
-import helpers from '../../Utils/helpers.js'
-import classnames from 'classnames'
-import style from './style.css'
+import Row from './row'
 
 export default class PivotBody extends Component {
   static propTypes = {
@@ -12,12 +10,19 @@ export default class PivotBody extends Component {
     rowsHeaders: PropTypes.array,
     rowsPanelSizes: PropTypes.array,
     scrollTop: PropTypes.number,
-    headerSizes: PropTypes.array,
+    thSizes: PropTypes.array,
+    sticky: PropTypes.bool,
     userDefinedSize: PropTypes.bool,
   }
   static defaultProps = {
+    sticky: false,
     bodyData: [],
     rowsPanelHeaders: [],
+    scrollTop: 0,
+  }
+
+  componentDidMount(){
+    this.updateScrollPosition()
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -25,13 +30,17 @@ export default class PivotBody extends Component {
   }
 
   componentDidUpdate() {
-    const {scrollTop} = this.props
+    this.updateScrollPosition()
+  }
 
-    if (scrollTop !== undefined) {
+
+  updateScrollPosition(){
+    const {scrollTop, sticky} = this.props
+
+    if (sticky && scrollTop !== undefined) {
       this.container.scrollTop = scrollTop
     }
   }
-
 
   consolidateBody(bodyDataRowsHeaders, bodyData){
     if (bodyDataRowsHeaders.length === 0) {
@@ -50,12 +59,13 @@ export default class PivotBody extends Component {
       rowsPanelSizes,
       className,
       additionalStyle,
-      headerSizes,
+      thSizes,
       userDefinedSize,
+      sticky,
     } = this.props
 
     const bodyMatrix = this.consolidateBody(rowsPanelHeaders, bodyData)
-    const lastRow = userDefinedSize?headerSizes[headerSizes.length-1]:[]
+
     return (
       <tbody
           className={className}
@@ -64,24 +74,14 @@ export default class PivotBody extends Component {
       >
         {
           bodyMatrix.map((row, rowIndex)=>
-          <tr key={rowIndex}>
-          {
-            row.map((col, colIndex)=> {
-              const tdStyle = helpers.getByPath(rowsPanelSizes, `${rowIndex}.${colIndex}`)
-
-              return (
-                <td
-                    className={classnames(style.col,{[style.evenRow]:rowIndex%2===0})}
-                    key={colIndex}
-                    rowSpan={col.rowspan}
-                    style={tdStyle}
-                >
-                  <div style={userDefinedSize?{width:lastRow[colIndex]}:null}>{col.displayValue}</div>
-                </td>
-              )
-            })
-          }
-          </tr>
+            <Row
+                key={rowIndex}
+                row={row}
+                rowIndex={rowIndex}
+                rowsPanelSizes={rowsPanelSizes}
+                thSizes={thSizes}
+                userDefinedSize={userDefinedSize}
+            />
           )
         }
       </tbody>

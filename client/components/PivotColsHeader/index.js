@@ -48,11 +48,11 @@ export default class PivotColsHeader extends Component {
           >
               <PivotThead
                   headMatrix={headMatrix}
-                  headerSizes={headerSizes.thSizes}
                   resizeColumn={resizeColumn}
                   rowsHeaders={rowsHeaders}
                   scrollLeft={scrollLeft}
                   sticky
+                  thSizes={headerSizes.thSizes}
               />
           </table>
         </div>
