@@ -77,6 +77,12 @@ self.addEventListener('message', (e) => {
   } else if (type==='startStreamRequest') {
     const {baseUrl, fullToken, parsedJaql, datasource, hierarchy} = e.data
     tempHierarchy = hierarchy
+    tempHeadersData={
+      rows:{
+      },
+      cols:{
+      },
+    }
     socket.emit('streamRequest', {
       jaql: parsedJaql,
       token: fullToken,

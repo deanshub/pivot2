@@ -43,7 +43,7 @@ export default class PivotTheadCol extends Component {
       >
         <div
             className={classnames(style.titleDiv)}
-            style={thStyle}
+            style={sticky?thStyle:undefined}
         >
           {col.displayValue}
         </div>

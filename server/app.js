@@ -138,6 +138,7 @@ function streamPageData(pivotCache, wantedOffset, pageSize, client) {
     return cacheUtils.wantedPageValues(pivotCache, wantedOffset, pageSize)
   })
   .subscribe((pivotRow) => {
+    console.log('streaming...');
     client.emit('streamChunk', pivotRow)
   }, (err) => {
     console.log(err)

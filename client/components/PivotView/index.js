@@ -142,6 +142,7 @@ export default class PivotView extends Component {
   }
 
   remessure() {
+    // TODO: find a way to replace the timeout of 300 ms (for rendering without streaming)
     setTimeout(()=>{
       const { headersData, rowsPanelHeaders } = this.props
       const { userDefinedSize } = this.state
@@ -191,7 +192,7 @@ export default class PivotView extends Component {
       if (Object.keys(stateToChange).length) {
         this.setState(stateToChange)
       }
-    })
+    },300)
   }
 
   getCornerSizes(thead, numOfRowsHeaders) {
@@ -225,8 +226,9 @@ export default class PivotView extends Component {
   getHeadersSizes(thead) {
     return Array.from(thead.childNodes).map(currTr=>{
       return Array.from(currTr.childNodes).map(currTh=> {
+        const newHeight = currTh.offsetHeight
         return {
-          height: window.getComputedStyle(currTh).height,
+          height: `${newHeight}px`,
           width: window.getComputedStyle(currTh).width,
         }
       })
@@ -236,9 +238,12 @@ export default class PivotView extends Component {
   getRowPanelSizes(tbody) {
     return Array.from(tbody.childNodes).map(currTr=>{
       return Array.from(currTr.childNodes).filter(currTd=>currTd.rowSpan).map(currTd=> {
+        const newHeight = parseInt(window.getComputedStyle(currTd).height)-1
+        const newWidth = currTd.offsetWidth-3
+
         return {
-          height: window.getComputedStyle(currTd).height,
-          width: window.getComputedStyle(currTd).width,
+          height: `${newHeight}px`,
+          width: `${newWidth}px`,
         }
       })
     })
