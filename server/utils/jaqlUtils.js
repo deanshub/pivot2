@@ -29,6 +29,8 @@ const jaqlHashBlacklist = [
 const jaqlPivotBlacklist = [
   'explicit',
   'grandTotals',
+  'subtotal',
+  'subtotalAgg',
   'offset',
   'count',
   'handlers',
