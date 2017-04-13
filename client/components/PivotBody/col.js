@@ -24,9 +24,8 @@ export default class PivotBodyCol extends Component {
           className={classnames(style.col,{[style.evenRow]:rowIndex%2===0})}
           colSpan={col.colspan}
           rowSpan={col.rowspan}
-          style={tdStyle}
       >
-        <div style={colStyle}>{col.displayValue}</div>
+        <div style={{display:'inline-block', ...tdStyle, ...colStyle}}>{col.displayValue}</div>
       </td>
     )
   }

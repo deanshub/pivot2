@@ -12,7 +12,9 @@ export default class App extends Component {
     this.state = {
       hierarchy: undefined,
       data: [],
+      currentPage: undefined,
       headersData: undefined,
+      pageCount: undefined,
       rowsPanelHeaders: [],
       bodyData: undefined,
       totalPagesCached: {
@@ -138,15 +140,17 @@ export default class App extends Component {
   resetPivotData(extra) {
     this.setState({
       hierarchy: undefined,
+      currentPage: undefined,
       data: [],
       headersData: undefined,
       rowsPanelHeaders: [],
-      bodyData: undefined,
+      bodyData: [],
       totalPagesCached: {
         numOfPagesCached: undefined,
         pivotFullyCached: true,
       },
       totalRowsNumber: undefined,
+      pageCount: undefined,
       ...extra,
     })
   }
