@@ -59,17 +59,21 @@ function emitCachedPage(client, pivotCache, wantedOffset, pageSize) {
   }
 }
 
-function emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages) {
+function emitTotalPagesCached(client, pivotCache, pageSize, emitOptions = {}) {
   const cachedRowsNum = getCachedRowsNum(pivotCache)
-  const totalPagesCached = Math.ceil(cachedRowsNum / pageSize)
+  const numOfPagesCached = Math.ceil(cachedRowsNum / pageSize)
+  const { emitEveryXPages, pivotFullyCached } = emitOptions
   let shouldEmitPages = true
 
-  if (emitEveryXPages && (totalPagesCached % emitEveryXPages !== 0)) {
+  if (emitEveryXPages && (numOfPagesCached % emitEveryXPages !== 0)) {
     shouldEmitPages = false
   }
 
   if (shouldEmitPages) {
-    client.emit('totalPagesCached', totalPagesCached)
+    client.emit('totalPagesCached', {
+      numOfPagesCached,
+      pivotFullyCached,
+    })
 
     // client.emit('totalRowsNumber', pivotCache.numOfRowsCached)
   }

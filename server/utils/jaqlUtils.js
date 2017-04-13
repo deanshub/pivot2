@@ -24,6 +24,7 @@ const jaqlHashBlacklist = [
   'custom',
   'title',
   'column',
+  'subtotalAgg',
 ]
 
 const jaqlPivotBlacklist = [
@@ -42,6 +43,7 @@ const jaqlPivotBlacklist = [
   'title',
   'sortDetails',
   'sort',
+  'subtotalAgg',
 ]
 
 function getLastRowIndexFromJaql(jaqlQueryData) {

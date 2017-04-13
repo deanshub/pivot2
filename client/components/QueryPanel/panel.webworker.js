@@ -3,6 +3,8 @@ import IO from 'socket.io-client'
 import rxExtensions from '../../Utils/rxExtensions.js'
 import pivotCacheUtils from '../../Utils/pivotCacheUtils.js'
 import transformer from '../../store/transformer.js'
+import { SUBTOTALS_DATA_COUNT_SYM } from '../../constants/symbols'
+
 
 const socket = IO(`${location.protocol}//${location.host}`)
 
@@ -14,6 +16,11 @@ let tempHeadersData= {
   },
   cols:{
   },
+}
+
+let pivotSubTotals = {
+  rowsLayers: [],
+  columnsLayers: [],
 }
 
 Rx.Observable.prototype.pivotRowsBuffer = rxExtensions.pivotRowsBuffer
@@ -32,6 +39,12 @@ socket.on('totalPagesCached', (totalPagesCached) => {
   })
 })
 
+const subtotalsStream = Rx.Observable.create(function (subscriber) {
+  socket.on('subtotalChunk', function(subtotalChunk) {
+    subscriber.next(subtotalChunk)
+  })
+})
+
 socket.on('totalRowsNumber', (totalRowsNumber) => {
   self.postMessage({
     type:'totalRowsNumber',
@@ -39,22 +52,15 @@ socket.on('totalRowsNumber', (totalRowsNumber) => {
   })
 })
 
-socket.on('pivotFullyCached', (pivotFullyCached) => {
-  self.postMessage({
-    type:'pivotFullyCached',
-    pivotFullyCached,
-  })
-})
-
-
 const subscriber = result
 .filter(chunk=>!chunk.end)
 .do((pivotRow) => {
-  pivotCacheUtils.updatePivotModel(tempHierarchy, tempHeadersData, pivotRow)
+  pivotCacheUtils.updatePivotModel(tempHierarchy, tempHeadersData, pivotRow, pivotSubTotals)
 })
 .pivotRowsBuffer(maxChunksLimit)
 .filter(chunks=>chunks.length>0)
 .subscribe((chunks) => {
+  // TODO: Change this logic
   const headersData = transformer.getHeadersData(tempHeadersData, tempHierarchy)
   const rowsHeadersAndBodyData = transformer.headersDataToBodyMatrix(tempHeadersData, tempHierarchy)
 
@@ -75,8 +81,24 @@ self.addEventListener('message', (e) => {
     const result = transformer.prepareQueryArgs({url, token, jaql, pageSize, pageNumber})
     self.postMessage({...result, type:'startQuery'})
   } else if (type==='startStreamRequest') {
-    const {baseUrl, fullToken, parsedJaql, datasource, hierarchy} = e.data
+    const {baseUrl, fullToken, parsedJaql, datasource, hierarchy, subTotals, grandTotals} = e.data
+    pivotSubTotals = subTotals
     tempHierarchy = hierarchy
+
+    if (grandTotals.columns) {
+      tempHeadersData.cols[SUBTOTALS_DATA_COUNT_SYM] = []
+    }
+
+    if (grandTotals.rows) {
+      tempHeadersData.rows[SUBTOTALS_DATA_COUNT_SYM] = []
+    }
+
+    // tempHeadersData= {
+    //   rows:{
+    //   },
+    //   cols:{
+    //   },
+    // }
     socket.emit('streamRequest', {
       jaql: parsedJaql,
       token: fullToken,

@@ -83,8 +83,14 @@ io.on('connection', function(client) {
 
       // If the wanted page is already cached
       if (cacheUtils.checkIfPageCached(pivotCache, wantedOffset, pageSize)) {
-        // Emit total number of pages being cached
-        cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
+        if (pivotCache.pivotFullyCached) {
+          const emitOptions = {
+            pivotFullyCached: true,
+          }
+
+          // Emit total number of pages being cached
+          cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitOptions)
+        }
 
         // Emits the cached page to the client
         cacheUtils.emitCachedPage(client, pivotCache, wantedOffset, pageSize)
@@ -96,7 +102,7 @@ io.on('connection', function(client) {
     })
   })
 
-  client.on('cancelStream'  , ()=> cancelStream(client))
+  client.on('cancelStream', ()=> cancelStream(client))
 
   client.on('disconnect', function() {
     console.log('disconnected')
@@ -124,11 +130,20 @@ function streamPageNumbers(pivotCache, pageSize, client) {
     return cacheUtils.getCachedPagesNum(pivotCache, pageSize)
   })
   .subscribe(() => {
-    cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitEveryXPages)
+    const emitOptions = {
+      emitEveryXPages,
+    }
+
+    cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitOptions)
   }, (err) => {
     console.log(err)
   }, () => {
-    cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize)
+    const emitOptions = {
+      pivotFullyCached: true,
+    }
+
+    cacheUtils.emitTotalPagesCached(client, pivotCache, pageSize, emitOptions)
+    pivotCache.pivotFullyCached = true
   })
 }
 
@@ -143,6 +158,5 @@ function streamPageData(pivotCache, wantedOffset, pageSize, client) {
     console.log(err)
   }, () => {
     // client.emit('totalRowsNumber', client.pivotsCache[jaqlHash].numOfRowsCached)
-    client.emit('pivotFullyCached', true)
   })
 }

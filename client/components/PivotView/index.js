@@ -18,6 +18,7 @@ export default class PivotView extends Component {
     loadNextPage: PropTypes.func,
     pivotFullyCached: PropTypes.bool,
     rowsPanelHeaders: PropTypes.array,
+    totalRowsNumber: PropTypes.number,
   }
 
   static defaultProps = {
@@ -297,7 +298,7 @@ export default class PivotView extends Component {
   }
 
   render() {
-    const {headersData, rowsPanelHeaders, bodyData} = this.props
+    const {headersData, rowsPanelHeaders, bodyData, totalRowsNumber} = this.props
 
     const {
       headerSizes,
@@ -361,6 +362,7 @@ export default class PivotView extends Component {
               bodyData={bodyData}
               ref={pivotBody=>this.pivotBody=pivotBody}
               rowsPanelHeaders={rowsPanelHeaders}
+              totalRowsNumber={totalRowsNumber}
           />
         </table>
       </div>

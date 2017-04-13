@@ -22,6 +22,7 @@ export default class PivotBodyCol extends Component {
     return (
       <td
           className={classnames(style.col,{[style.evenRow]:rowIndex%2===0})}
+          colSpan={col.colspan}
           rowSpan={col.rowspan}
           style={tdStyle}
       >

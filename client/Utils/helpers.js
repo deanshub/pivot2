@@ -57,7 +57,38 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
   return headerMatrix
 }
 
+function getSubTotalsFromJaql(jaql) {
+  const jaqlColumns = getSpecificPanelFromJaql(jaql, 'columns')
+  const jaqlRows = getSpecificPanelFromJaql(jaql, 'rows')
+
+  const jaqlRowsSubTotals = jaqlRows.filter((row) => {
+    return getByPath(row, 'format.subtotal')
+  }).map((subtotalPart) => {
+    return subtotalPart.field.index
+  }).sort()
+
+  const jaqlColumnsSubTotals = jaqlColumns.filter((column) => {
+    return getByPath(column, 'format.subtotal')
+  }).map((subtotalPart) => {
+    return subtotalPart.field.index - jaqlRows.length
+  }).sort()
+
+  const jaqlSubTotals = {
+    rowsLayers: jaqlRowsSubTotals,
+    columnsLayers: jaqlColumnsSubTotals,
+  }
+
+  return jaqlSubTotals
+}
+
+function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
+  return jaqlQueryData.metadata.filter((currMeta) => {
+    return currMeta.panel === wantedPanel
+  })
+}
+
 module.exports = {
   getByPath,
   consolidateHeads,
+  getSubTotalsFromJaql,
 }

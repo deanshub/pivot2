@@ -15,9 +15,11 @@ export default class App extends Component {
       headersData: undefined,
       rowsPanelHeaders: [],
       bodyData: undefined,
-      totalPagesCached: undefined,
+      totalPagesCached: {
+        numOfPagesCached: undefined,
+        pivotFullyCached: true,
+      },
       totalRowsNumber: undefined,
-      pivotFullyCached:true,
     }
 
     this.panelWorker = new PanelWorker()
@@ -43,8 +45,6 @@ export default class App extends Component {
       this.setPagesCount(restData.totalPagesCached)
     } else if (type === 'totalRowsNumber') {
       this.setTotalRowsNumber(restData.totalRowsNumber)
-    } else if (type === 'pivotFullyCached') {
-      this.setPivotFullyCached(restData.pivotFullyCached)
     }
   }
 
@@ -55,6 +55,8 @@ export default class App extends Component {
       parsedJaql,
       datasource,
       hierarchy,
+      subTotals,
+      grandTotals,
     } = queryData
 
     this.setState({
@@ -68,12 +70,20 @@ export default class App extends Component {
       parsedJaql,
       datasource,
       hierarchy,
+      subTotals,
+      grandTotals,
     })
   }
 
   setTotalRowsNumber(totalRowsNumber) {
     this.setState({
       totalRowsNumber,
+    })
+  }
+
+  changePivotProp(name, value) {
+    this.setState({
+      [name]:value,
     })
   }
 
@@ -132,9 +142,11 @@ export default class App extends Component {
       headersData: undefined,
       rowsPanelHeaders: [],
       bodyData: undefined,
-      totalPagesCached: undefined,
+      totalPagesCached: {
+        numOfPagesCached: undefined,
+        pivotFullyCached: true,
+      },
       totalRowsNumber: undefined,
-      pivotFullyCached:true,
       ...extra,
     })
   }
@@ -154,6 +166,7 @@ export default class App extends Component {
 
       this.streamMetaData.pageNumber += 1
 
+
       this.panelWorker.postMessage({type:'prepareQueryArgs' ,token, jaql, url, chunksLimit, pageSize, pageNumber: pageNumber + 1})
     }
   }
@@ -164,13 +177,14 @@ export default class App extends Component {
   }
 
   render() {
-    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached, totalRowsNumber, pivotFullyCached} = this.state
+    const { headersData, rowsPanelHeaders, bodyData, totalPagesCached, totalRowsNumber} = this.state
 
     return (
       <div
           className={classnames(style.container)}
       >
         <QueryPanel
+            changePivotProp={::this.changePivotProp}
             onChunks={::this.onChunks}
             resetPivotData={::this.resetPivotData}
             startStream={::this.startStream}
@@ -181,8 +195,8 @@ export default class App extends Component {
             currentPage={this.streamMetaData.pageNumber}
             headersData={headersData}
             loadNextPage ={::this.loadNextPage}
-            pageCount={totalPagesCached}
-            pivotFullyCached={pivotFullyCached}
+            pageCount={totalPagesCached.numOfPagesCached}
+            pivotFullyCached={totalPagesCached.pivotFullyCached}
             rowsPanelHeaders={rowsPanelHeaders}
             totalRowsNumber={totalRowsNumber}
         />

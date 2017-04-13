@@ -13,6 +13,7 @@ export default class PivotBody extends Component {
     thSizes: PropTypes.array,
     sticky: PropTypes.bool,
     userDefinedSize: PropTypes.bool,
+    totalRowsNumber: PropTypes.number,
   }
   static defaultProps = {
     sticky: false,
@@ -61,6 +62,7 @@ export default class PivotBody extends Component {
       additionalStyle,
       thSizes,
       userDefinedSize,
+      totalRowsNumber,
       sticky,
     } = this.props
 
