@@ -1,9 +1,9 @@
 {
-  "name": "frontend-boilerplate",
+  "name": "pivot2",
   "version": "1.0.0",
   "private": true,
-  "description": "A boilerplate of things that shouldn't exist",
-  "main": "client/containers/App",
+  "description": "An awesome implementaion for pivot table",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "set NODE_ENV=development&&webpack-dev-server -d --history-api-fallback --hot --inline --progress --colors --port 6789",
@@ -14,7 +14,9 @@
     "build:dev": "set NODE_ENV=development&&webpack --progress --colors",
     "build_linux": "NODE_ENV=production webpack -p --progress --colors",
     "dist": "set NODE_ENV=production&&webpack -p --progress --colors --config dist.webapck.config.js",
-    "dist:dev": "set NODE_ENV=development&&webpack --progress --colors --config dist.webapck.config.js"
+    "dist:dev": "set NODE_ENV=development&&webpack --progress --colors --config dist.webapck.config.js",
+    "dist:npm": "set NODE_ENV=development&&webpack --progress --colors --config npm.webapck.config.js",
+    "prepublish": "npm run dist:npm"
   },
   "license": "MIT",
   "devDependencies": {

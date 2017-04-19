@@ -299,8 +299,6 @@ function getSubtotalsNum(headersData) {
     }
   }
 
-
-
   return numOfSubtotals
 }
 
