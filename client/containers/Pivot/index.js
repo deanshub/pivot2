@@ -13,6 +13,16 @@ export default class Pivot extends Component {
     rowsPanelHeaders: PropTypes.array,
     totalRowsNumber: PropTypes.number,
   }
+
+  constructor(props){
+    super(props)
+    this.state = props
+  }
+
+  componentWillReceiveProps(props){
+    this.setState(props)
+  }
+
   render() {
     const {
       headersData,
@@ -23,7 +33,7 @@ export default class Pivot extends Component {
       currentPage,
       totalRowsNumber,
       pivotFullyCached,
-    } = this.props
+    } = this.state
 
     return (
       <div>
