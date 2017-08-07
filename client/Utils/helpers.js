@@ -33,13 +33,13 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
   }else if(colsExists || dataExists){
     if (dataExists) {
       headerMatrix = [[]]
-      dataCellsAmountToAdd = 1
+      dataCellsAmountToAdd = colsHeaders[colsHeaders.length - 1].length
     } else {
       headerMatrix = Array.from(Array(colsHeaders.length)).map(()=> {
         return []
       })
 
-      dataCellsAmountToAdd = colsHeaders[colsHeaders.length - 1].length
+      dataCellsAmountToAdd = 0
     }
     // hierarchyCols.length || 1
   }
