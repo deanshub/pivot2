@@ -66,7 +66,7 @@ export default class PivotView extends Component {
     let scrollPrecent = newScrollTop / (pivotTable.scrollHeight - pivotTable.clientHeight)
 
     if (scrollPrecent > 0.7) {
-      loadNextPage()
+      // loadNextPage()
     }
 
     this.setState({
@@ -143,7 +143,6 @@ export default class PivotView extends Component {
   }
 
   remessure() {
-    // TODO: find a way to replace the timeout of 300 ms (for rendering without streaming)
     setTimeout(()=>{
       const { headersData, rowsPanelHeaders } = this.props
       const { userDefinedSize } = this.state
@@ -193,7 +192,7 @@ export default class PivotView extends Component {
       if (Object.keys(stateToChange).length) {
         this.setState(stateToChange)
       }
-    },300)
+	 }, 300)
   }
 
   getCornerSizes(thead, numOfRowsHeaders) {
@@ -230,7 +229,7 @@ export default class PivotView extends Component {
         const newHeight = currTh.offsetHeight
         return {
           height: `${newHeight}px`,
-          width: window.getComputedStyle(currTh).width,
+          width: parseInt(window.getComputedStyle(currTh).width) - 3,
         }
       })
     })
@@ -239,12 +238,12 @@ export default class PivotView extends Component {
   getRowPanelSizes(tbody) {
     return Array.from(tbody.childNodes).map(currTr=>{
       return Array.from(currTr.childNodes).filter(currTd=>currTd.rowSpan).map(currTd=> {
-        const newHeight = parseInt(window.getComputedStyle(currTd).height)-1
+        const newHeight = parseInt(window.getComputedStyle(currTd).height) - 3
         const newWidth = currTd.offsetWidth-3
 
         return {
           height: `${newHeight}px`,
-          width: `${newWidth}px`,
+          width: `${newWidth}px`
         }
       })
     })
