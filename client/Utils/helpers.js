@@ -4,7 +4,7 @@ function getByPath(obj, path) {
   },obj)
 }
 
-function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
+function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies, bodyData){
   if (!hierarchies){
     return []
   }
@@ -25,7 +25,7 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
       return []
     })
 
-    dataCellsAmountToAdd = colsHeaders[colsHeaders.length - 1].length
+    dataCellsAmountToAdd = bodyData[0].length / hierarchies.hierarchyData.length
   }else if(rowsExists && !colsExists && !dataExists){
     headerMatrix = [[]]
     dataCellsAmountToAdd = dataHeaders.length
@@ -33,7 +33,7 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies){
   }else if(colsExists || dataExists){
     if (dataExists) {
       headerMatrix = [[]]
-      dataCellsAmountToAdd = colsHeaders[colsHeaders.length - 1].length
+      dataCellsAmountToAdd = bodyData[0].length / hierarchies.hierarchyData.length
     } else {
       headerMatrix = Array.from(Array(colsHeaders.length)).map(()=> {
         return []

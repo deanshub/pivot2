@@ -320,7 +320,7 @@ export default class PivotView extends Component {
     if (headersData) {
       const {colsHeaders, dataHeaders, hierarchies} = headersData
       rowsHeaders = headersData.rowsHeaders
-      headMatrix = helpers.consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies)
+      headMatrix = helpers.consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies, bodyData)
     }
 
     return (
