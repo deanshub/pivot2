@@ -40,10 +40,10 @@ export default class PivotTheadCol extends Component {
           className={className}
           colSpan={col.colspan}
           rowSpan={col.rowspan}
+          style={sticky?thStyle:undefined}
       >
         <div
             className={classnames(style.titleDiv)}
-            style={sticky?thStyle:undefined}
         >
           {col.displayValue}
         </div>

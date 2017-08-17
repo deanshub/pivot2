@@ -178,12 +178,19 @@ export default class PivotView extends Component {
       if (rowsPanelHeaders) {
         const pivotBody = ReactDOM.findDOMNode(this.pivotBody)
         const rowsPanelNewSizes = this.getRowPanelSizes(pivotBody)
+        const pivotContainer = ReactDOM.findDOMNode(this.pivotScrollWrapper)
 
         if (!R.equals(this.state.rowsPanelSizes, rowsPanelNewSizes)) {
           stateToChange.rowsPanelSizes = rowsPanelNewSizes
         }
 
         const newStickyRowsStyle = this.getStickyRowsStyles(this.container)
+
+        // If there is horizontal scroll then rows panel height should be 9px less
+        if (pivotContainer.clientWidth < pivotBody.clientWidth) {
+          newStickyRowsStyle.height -= 9
+        }
+
         if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
           stateToChange.stickyRowsStyle = newStickyRowsStyle
         }
@@ -229,7 +236,7 @@ export default class PivotView extends Component {
         const newHeight = currTh.offsetHeight
         return {
           height: `${newHeight}px`,
-          width: parseInt(window.getComputedStyle(currTh).width) - 3,
+          width: parseInt(window.getComputedStyle(currTh).width),
         }
       })
     })
