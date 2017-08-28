@@ -6,11 +6,23 @@ import style from './style.css'
 
 export default class PivotBodyRow extends Component {
   static propTypes = {
+    darkRow: PropTypes.bool,
+    negateDarkRow: PropTypes.func,
+    resetDarkRow: PropTypes.func,
     rowIndex: PropTypes.number,
+    rowsPanel: PropTypes.bool,
   }
 
   render() {
-    const { row, rowIndex, rowsPanelSizes, userDefinedSize, thSizes } = this.props
+    const {
+      darkRow,
+      row,
+      rowIndex,
+      rowsPanel,
+      rowsPanelSizes,
+      userDefinedSize,
+      thSizes,
+    } = this.props
 
     return (
       <tr className={classnames(style.row)}>
@@ -18,12 +30,20 @@ export default class PivotBodyRow extends Component {
         row.map((col, colIndex)=> {
           const tdStyle = helpers.getByPath(rowsPanelSizes, `${rowIndex}.${colIndex}`)
 
+          let darkCell = darkRow
+
+          if (rowsPanel && colIndex !== row.length - 1) {
+            darkCell = false
+          }
+
           return (
             <Col
                 col={col}
                 colIndex={colIndex}
+                darkCell={darkCell}
                 key={colIndex}
                 rowIndex={rowIndex}
+                rowsPanel={rowsPanel}
                 tdStyle={tdStyle}
                 thSizes={thSizes}
                 userDefinedSize={userDefinedSize}

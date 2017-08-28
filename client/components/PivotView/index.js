@@ -19,6 +19,7 @@ export default class PivotView extends Component {
     pivotFullyCached: PropTypes.bool,
     rowsPanelHeaders: PropTypes.array,
     totalRowsNumber: PropTypes.number,
+    subTotalRows: PropTypes.array,
   }
 
   static defaultProps = {
@@ -188,7 +189,7 @@ export default class PivotView extends Component {
 
         // If there is horizontal scroll then rows panel height should be 9px less
         if (pivotContainer.clientWidth < pivotBody.clientWidth) {
-          newStickyRowsStyle.height -= 9
+          newStickyRowsStyle.height = newStickyRowsStyle.height - (this.pivotScrollWrapper.offsetHeight - this.pivotScrollWrapper.clientHeight)
         }
 
         if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
@@ -309,7 +310,7 @@ export default class PivotView extends Component {
   }
 
   render() {
-    const {headersData, rowsPanelHeaders, bodyData, totalRowsNumber} = this.props
+    const {headersData, rowsPanelHeaders, bodyData, totalRowsNumber, subTotalRows} = this.props
 
     const {
       headerSizes,
@@ -362,10 +363,12 @@ export default class PivotView extends Component {
               additionalStyle={stickyRowsStyle}
               className={classnames(style.stickyRowsPanel)}
               ref={stickyRowsPanel=>this.stickyRowsPanel=stickyRowsPanel}
+              rowsPanel
               rowsPanelHeaders={rowsPanelHeaders}
               rowsPanelSizes={rowsPanelSizes}
               scrollTop={scrollTop}
               sticky
+              subTotalRows={subTotalRows}
               thSizes={headerSizes.thSizes}
               userDefinedSize={userDefinedSize}
           />
@@ -373,6 +376,7 @@ export default class PivotView extends Component {
               bodyData={bodyData}
               ref={pivotBody=>this.pivotBody=pivotBody}
               rowsPanelHeaders={rowsPanelHeaders}
+              subTotalRows={subTotalRows}
               totalRowsNumber={totalRowsNumber}
           />
         </table>

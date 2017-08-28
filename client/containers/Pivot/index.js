@@ -12,6 +12,7 @@ export default class Pivot extends Component {
     headersData: PropTypes.object,
     rowsPanelHeaders: PropTypes.array,
     totalRowsNumber: PropTypes.number,
+    subTotalRows: PropTypes.array,
   }
 
   constructor(props){
@@ -31,6 +32,7 @@ export default class Pivot extends Component {
       loadNextPage,
       pageCount,
       currentPage,
+      subTotalRows,
       totalRowsNumber,
       pivotFullyCached,
     } = this.state
@@ -43,6 +45,7 @@ export default class Pivot extends Component {
             loadNextPage ={loadNextPage}
             pivotFullyCached={pivotFullyCached}
             rowsPanelHeaders={rowsPanelHeaders}
+            subTotalRows={subTotalRows}
             totalRowsNumber={totalRowsNumber}
         />
         <Pager

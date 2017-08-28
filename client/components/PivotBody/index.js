@@ -7,11 +7,13 @@ export default class PivotBody extends Component {
     additionalStyle: PropTypes.object,
     bodyData: PropTypes.array,
     className: PropTypes.string,
+    rowsPanel: PropTypes.bool,
     rowsHeaders: PropTypes.array,
     rowsPanelSizes: PropTypes.array,
     scrollTop: PropTypes.number,
     thSizes: PropTypes.array,
     sticky: PropTypes.bool,
+    subTotalRows: PropTypes.array,
     userDefinedSize: PropTypes.bool,
     totalRowsNumber: PropTypes.number,
   }
@@ -22,9 +24,16 @@ export default class PivotBody extends Component {
     scrollTop: 0,
   }
 
+  constructor(props, context) {
+    super(props, context)
+    this.darkRow = false
+  }
+
+
   componentDidMount(){
     this.updateScrollPosition()
   }
+
 
   shouldComponentUpdate(nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState)
@@ -32,6 +41,14 @@ export default class PivotBody extends Component {
 
   componentDidUpdate() {
     this.updateScrollPosition()
+  }
+
+  negateDarkRow() {
+    this.darkRow = !this.darkRow
+  }
+
+  resetDarkRow() {
+    this.darkRow = false
   }
 
 
@@ -58,12 +75,14 @@ export default class PivotBody extends Component {
       rowsPanelHeaders,
       bodyData,
       rowsPanelSizes,
+      rowsPanel,
       className,
       additionalStyle,
       thSizes,
       userDefinedSize,
       totalRowsNumber,
       sticky,
+      subTotalRows,
     } = this.props
 
     const bodyMatrix = this.consolidateBody(rowsPanelHeaders, bodyData)
@@ -75,15 +94,32 @@ export default class PivotBody extends Component {
           style={additionalStyle}
       >
         {
-          bodyMatrix.map((row, rowIndex)=>
-            <Row
-                key={rowIndex}
-                row={row}
-                rowIndex={rowIndex}
-                rowsPanelSizes={rowsPanelSizes}
-                thSizes={thSizes}
-                userDefinedSize={userDefinedSize}
+          bodyMatrix.map((row, rowIndex)=>{
+            let darkCell = this.darkRow
+
+            // Subtotal so skip dark row
+            if (subTotalRows.indexOf(rowIndex) > -1) {
+              darkCell = false
+            } else {
+              if (rowIndex === 0) {
+                darkCell = false
+                this.resetDarkRow()
+              }
+
+              this.negateDarkRow()
+            }
+
+            return <Row
+            darkRow={darkCell}
+            key={rowIndex}
+            row={row}
+            rowIndex={rowIndex}
+            rowsPanel={rowsPanel}
+            rowsPanelSizes={rowsPanelSizes}
+            thSizes={thSizes}
+            userDefinedSize={userDefinedSize}
             />
+          }
           )
         }
       </tbody>

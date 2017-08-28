@@ -5,14 +5,17 @@ import style from './style.css'
 export default class PivotBodyCol extends Component {
   static propTypes = {
     col: PropTypes.object,
+    colsNum: PropTypes.number,
     colIndex: PropTypes.number,
+    darkCell: PropTypes.bool,
     rowIndex: PropTypes.number,
+    rowsPanel: PropTypes.bool,
     tdStyle: PropTypes.object,
     userDefinedSize: PropTypes.bool,
   }
 
   render() {
-    const { col, tdStyle, rowIndex, colIndex, userDefinedSize, thSizes } = this.props
+    const { col, tdStyle, rowIndex, colIndex, userDefinedSize, thSizes, rowsPanel, darkCell } = this.props
     const lastRow = userDefinedSize?thSizes[thSizes.length-1]:[]
     const colStyle = userDefinedSize&&lastRow[colIndex-thSizes.rowsHeaders.length]?
       {width:lastRow[colIndex-thSizes.rowsHeaders.length].width}
@@ -21,7 +24,7 @@ export default class PivotBodyCol extends Component {
 
     return (
       <td
-          className={classnames(style.col,{[style.evenRow]:rowIndex%2===0})}
+          className={classnames(style.col,{[style.evenRow]: (darkCell)})}
           colSpan={col.colspan}
           rowSpan={col.rowspan}
       >
