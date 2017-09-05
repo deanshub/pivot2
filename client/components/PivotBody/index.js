@@ -109,16 +109,19 @@ export default class PivotBody extends Component {
               this.negateDarkRow()
             }
 
-            return <Row
-            darkRow={darkCell}
-            key={rowIndex}
-            row={row}
-            rowIndex={rowIndex}
-            rowsPanel={rowsPanel}
-            rowsPanelSizes={rowsPanelSizes}
-            thSizes={thSizes}
-            userDefinedSize={userDefinedSize}
-            />
+            return (
+              <Row
+                  darkRow={darkCell}
+                  key={rowIndex}
+                  row={row}
+                  rowIndex={rowIndex}
+                  rowsPanel={rowsPanel}
+                  rowsPanelSizes={rowsPanelSizes}
+                  sticky={sticky}
+                  thSizes={thSizes}
+                  userDefinedSize={userDefinedSize}
+              />
+            )
           }
           )
         }

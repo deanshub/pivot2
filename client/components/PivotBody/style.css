@@ -1,21 +1,19 @@
 .col{
-  border: 1px solid #afafaf;
+  border-right: 1px solid #cbced7;
+  /*min-height: 25px;*/
+  margin: 0;
+  padding: 0;
+  height: 25px;
 }
+.regularColumn{
+  padding: 0 5px;
+}
+.stickyColumn{
+  font-weight: bold;
+}
+
 .row{
 }
 .evenRow {
-  background-color: #f5f5f5;
+  background-color: #f4f4f8;
 }
-
-/*
-.sectionCol{
-  border-right: 1px solid #afafaf;
-}
-
-.normalCol{
-  border-right: 1px solid #f5f5f5;
-}
-
-.cell {
-  padding: 3px;
-}*/

@@ -20,6 +20,7 @@ export default class PivotBodyRow extends Component {
       rowIndex,
       rowsPanel,
       rowsPanelSizes,
+      sticky,
       userDefinedSize,
       thSizes,
     } = this.props
@@ -44,6 +45,7 @@ export default class PivotBodyRow extends Component {
                 key={colIndex}
                 rowIndex={rowIndex}
                 rowsPanel={rowsPanel}
+                sticky={sticky}
                 tdStyle={tdStyle}
                 thSizes={thSizes}
                 userDefinedSize={userDefinedSize}

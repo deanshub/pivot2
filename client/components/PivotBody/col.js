@@ -15,7 +15,17 @@ export default class PivotBodyCol extends Component {
   }
 
   render() {
-    const { col, tdStyle, rowIndex, colIndex, userDefinedSize, thSizes, rowsPanel, darkCell } = this.props
+    const {
+      col,
+      tdStyle,
+      rowIndex,
+      colIndex,
+      userDefinedSize,
+      thSizes,
+      rowsPanel,
+      darkCell,
+      sticky
+    } = this.props
     const lastRow = userDefinedSize?thSizes[thSizes.length-1]:[]
     const colStyle = userDefinedSize&&lastRow[colIndex-thSizes.rowsHeaders.length]?
       {width:lastRow[colIndex-thSizes.rowsHeaders.length].width}
@@ -24,11 +34,27 @@ export default class PivotBodyCol extends Component {
 
     return (
       <td
-          className={classnames(style.col,{[style.evenRow]: (darkCell)})}
+          className={
+            classnames(
+              style.col,
+              {[style.regularColumn]: !sticky},
+              {[style.stickyColumn]: sticky},
+              {[style.evenRow]: darkCell},
+            )
+          }
           colSpan={col.colspan}
           rowSpan={col.rowspan}
       >
-        <div style={{display:'inline-block', ...tdStyle, ...colStyle}}>{col.displayValue}</div>
+        <div
+            dir="auto"
+            style={{
+              display:'inline-block',
+              ...tdStyle,
+              ...colStyle,
+            }}
+        >
+          {col.displayValue}
+        </div>
       </td>
     )
   }

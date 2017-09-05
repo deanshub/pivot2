@@ -33,4 +33,5 @@
   position: absolute;
   background-color: white;
   overflow-y: hidden;
+  padding-left: 3px;
 }
