@@ -35,6 +35,7 @@ export default class PivotView extends Component {
       rowsPanelSizes: [],
       newStickyRowsStyle: {},
       stickyHeaderWrapperStyle: {},
+      rowPanelsVisible: false,
     }
 
   }
@@ -194,6 +195,7 @@ export default class PivotView extends Component {
 
         if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
           stateToChange.stickyRowsStyle = newStickyRowsStyle
+          stateToChange.rowPanelsVisible = true
         }
       }
 
@@ -246,8 +248,8 @@ export default class PivotView extends Component {
   getRowPanelSizes(tbody) {
     return Array.from(tbody.childNodes).map(currTr=>{
       return Array.from(currTr.childNodes).filter(currTd=>currTd.rowSpan).map(currTd=> {
-        // const newHeight = parseInt(window.getComputedStyle(currTd).height) - 3
-        const newHeight = 25
+        const newHeight = parseInt(window.getComputedStyle(currTd).height) - 3
+        //const newHeight = 25
         const newWidth = currTd.offsetWidth-3
 
         return {
@@ -260,8 +262,8 @@ export default class PivotView extends Component {
 
   getStickyRowsStyles(table) {
     const pivotContainerHeight = window.getComputedStyle(table.parentElement).height
-    // const theadHeight = window.getComputedStyle(table.childNodes[0]).height
-    const theadHeight = 25
+    const theadHeight = window.getComputedStyle(table.childNodes[0]).height
+    //const theadHeight = 25
     const stickyRowsHeight = parseInt(pivotContainerHeight) - parseInt(theadHeight)
 
     return {
@@ -322,6 +324,7 @@ export default class PivotView extends Component {
       stickyRowsStyle,
       stickyHeaderWrapperStyle,
       userDefinedSize,
+      rowPanelsVisible,
     } = this.state
 
     let headMatrix = []
@@ -364,6 +367,7 @@ export default class PivotView extends Component {
           <PivotBody
               additionalStyle={stickyRowsStyle}
               className={classnames(style.stickyRowsPanel)}
+              rowPanelsVisible={rowPanelsVisible}
               ref={stickyRowsPanel=>this.stickyRowsPanel=stickyRowsPanel}
               rowsPanel
               rowsPanelHeaders={rowsPanelHeaders}

@@ -14,6 +14,7 @@ export default class PivotBody extends Component {
     thSizes: PropTypes.array,
     sticky: PropTypes.bool,
     subTotalRows: PropTypes.array,
+    rowPanelsVisible: PropTypes.bool,
     userDefinedSize: PropTypes.bool,
     totalRowsNumber: PropTypes.number,
   }
@@ -22,6 +23,7 @@ export default class PivotBody extends Component {
     bodyData: [],
     rowsPanelHeaders: [],
     scrollTop: 0,
+    additionalStyle: {},
   }
 
   constructor(props, context) {
@@ -83,9 +85,16 @@ export default class PivotBody extends Component {
       totalRowsNumber,
       sticky,
       subTotalRows,
+      rowPanelsVisible,
     } = this.props
 
     const bodyMatrix = this.consolidateBody(rowsPanelHeaders, bodyData)
+
+    if (sticky && !rowPanelsVisible) {
+      additionalStyle.visibility = 'hidden'
+    } else {
+      additionalStyle.visibility = 'visible'
+    }
 
     return (
       <tbody
