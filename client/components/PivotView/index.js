@@ -141,7 +141,11 @@ export default class PivotView extends Component {
   }
 
   componentDidUpdate() {
-    this.remessure()
+    const pivotHiddenThead = ReactDOM.findDOMNode(this.pivotHiddenThead)
+    
+    if (pivotHiddenThead.childNodes && pivotHiddenThead.childNodes.length > 0) {
+      this.remessure()
+    }
   }
 
   remessure() {
