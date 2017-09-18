@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import shallowCompare from 'react-addons-shallow-compare'
 import Row from './row'
 
@@ -100,7 +101,7 @@ export default class PivotBody extends Component {
       <tbody
           className={className}
           ref={container=>this.container=container}
-          style={additionalStyle}
+          style={{...additionalStyle}}
       >
         {
           bodyMatrix.map((row, rowIndex)=>{
