@@ -153,7 +153,7 @@ export default class PivotView extends Component {
 
       const pivotHiddenThead = ReactDOM.findDOMNode(this.pivotHiddenThead)
 
-      if (pivotHiddenThead.childNodes && pivotHiddenThead.childNodes.length > 0) {
+      if (pivotHiddenThead && pivotHiddenThead.childNodes && pivotHiddenThead.childNodes.length > 0) {
 
         const thNewSizes = this.getHeadersSizes(pivotHiddenThead)
 
