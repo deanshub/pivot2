@@ -141,11 +141,7 @@ export default class PivotView extends Component {
   }
 
   componentDidUpdate() {
-    const pivotHiddenThead = ReactDOM.findDOMNode(this.pivotHiddenThead)
-    
-    if (pivotHiddenThead.childNodes && pivotHiddenThead.childNodes.length > 0) {
-      this.remessure()
-    }
+    this.remessure()
   }
 
   remessure() {
@@ -156,57 +152,61 @@ export default class PivotView extends Component {
       let stateToChange = {}
 
       const pivotHiddenThead = ReactDOM.findDOMNode(this.pivotHiddenThead)
-      const thNewSizes = this.getHeadersSizes(pivotHiddenThead)
 
-      if (headersData && !userDefinedSize) {
-        if (!R.equals(this.state.headerSizes.thSizes, thNewSizes)) {
-          const tableSizes = {
-            width: this.container.offsetWidth,
+      if (pivotHiddenThead.childNodes && pivotHiddenThead.childNodes.length > 0) {
+
+        const thNewSizes = this.getHeadersSizes(pivotHiddenThead)
+
+        if (headersData && !userDefinedSize) {
+          if (!R.equals(this.state.headerSizes.thSizes, thNewSizes)) {
+            const tableSizes = {
+              width: this.container.offsetWidth,
+            }
+
+            const cornerSizes = this.getCornerSizes(pivotHiddenThead, headersData.rowsHeaders.length)
+
+            stateToChange.headerSizes = {
+              thSizes : thNewSizes,
+              tableSizes,
+              cornerSizes,
+            }
           }
 
-          const cornerSizes = this.getCornerSizes(pivotHiddenThead, headersData.rowsHeaders.length)
+          const newStickyHeaderWrapperStyle =
+          this.getStickyHeaderWrapperSizes(this.pivotScrollWrapper, pivotHiddenThead)
 
-          stateToChange.headerSizes = {
-            thSizes : thNewSizes,
-            tableSizes,
-            cornerSizes,
+          if (!R.equals(this.state.stickyHeaderWrapperStyle, newStickyHeaderWrapperStyle)) {
+            stateToChange.stickyHeaderWrapperStyle = newStickyHeaderWrapperStyle
           }
         }
 
-        const newStickyHeaderWrapperStyle =
-        this.getStickyHeaderWrapperSizes(this.pivotScrollWrapper, pivotHiddenThead)
+        if (rowsPanelHeaders) {
+          const pivotBody = ReactDOM.findDOMNode(this.pivotBody)
+          const rowsPanelNewSizes = this.getRowPanelSizes(pivotBody)
+          const pivotContainer = ReactDOM.findDOMNode(this.pivotScrollWrapper)
 
-        if (!R.equals(this.state.stickyHeaderWrapperStyle, newStickyHeaderWrapperStyle)) {
-          stateToChange.stickyHeaderWrapperStyle = newStickyHeaderWrapperStyle
+          if (!R.equals(this.state.rowsPanelSizes, rowsPanelNewSizes)) {
+            stateToChange.rowsPanelSizes = rowsPanelNewSizes
+          }
+
+          const newStickyRowsStyle = this.getStickyRowsStyles(this.container)
+
+          // If there is horizontal scroll then rows panel height should be 9px less
+          if (pivotContainer.clientWidth < pivotBody.clientWidth) {
+            newStickyRowsStyle.height = newStickyRowsStyle.height - (this.pivotScrollWrapper.offsetHeight - this.pivotScrollWrapper.clientHeight)
+          }
+
+          if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
+            stateToChange.stickyRowsStyle = newStickyRowsStyle
+            stateToChange.rowPanelsVisible = true
+          }
+        }
+
+        if (Object.keys(stateToChange).length) {
+          this.setState(stateToChange)
         }
       }
-
-      if (rowsPanelHeaders) {
-        const pivotBody = ReactDOM.findDOMNode(this.pivotBody)
-        const rowsPanelNewSizes = this.getRowPanelSizes(pivotBody)
-        const pivotContainer = ReactDOM.findDOMNode(this.pivotScrollWrapper)
-
-        if (!R.equals(this.state.rowsPanelSizes, rowsPanelNewSizes)) {
-          stateToChange.rowsPanelSizes = rowsPanelNewSizes
-        }
-
-        const newStickyRowsStyle = this.getStickyRowsStyles(this.container)
-
-        // If there is horizontal scroll then rows panel height should be 9px less
-        if (pivotContainer.clientWidth < pivotBody.clientWidth) {
-          newStickyRowsStyle.height = newStickyRowsStyle.height - (this.pivotScrollWrapper.offsetHeight - this.pivotScrollWrapper.clientHeight)
-        }
-
-        if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
-          stateToChange.stickyRowsStyle = newStickyRowsStyle
-          stateToChange.rowPanelsVisible = true
-        }
-      }
-
-      if (Object.keys(stateToChange).length) {
-        this.setState(stateToChange)
-      }
-	 }, 300)
+    }, 300)
   }
 
   getCornerSizes(thead, numOfRowsHeaders) {
