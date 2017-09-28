@@ -1,6 +1,6 @@
 {
   "name": "pivot2",
-  "version": "1.3.12",
+  "version": "1.3.14",
   "description": "An awesome implementaion for pivot table",
   "main": "dist/index.js",
   "scripts": {
