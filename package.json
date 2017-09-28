@@ -14,7 +14,7 @@
     "build_linux": "NODE_ENV=production webpack -p --progress --colors",
     "dist": "set NODE_ENV=production&&webpack -p --progress --colors --config dist.webapck.config.js",
     "dist:dev": "set NODE_ENV=development&&webpack --progress --colors --config dist.webapck.config.js",
-    "dist:npm": "set NODE_ENV=development&&webpack --progress --colors --config npm.webapck.config.js",
+    "dist:npm": "set NODE_ENV=production&&webpack --progress --colors --config npm.webapck.config.js",
     "prepublish": "npm run dist:npm"
   },
   "license": "MIT",
