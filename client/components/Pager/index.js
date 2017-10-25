@@ -21,11 +21,7 @@ export default class Pager extends Component {
         <div>&lt;</div>
         <div>{currentPage} from {pageCount}{pivotFullyCached?'':'loading...'}</div>
         <div>&gt;</div>
-        {
-          pivotFullyCached ?
-          <div>&gt;&gt;</div>
-          : null
-        }
+        { pivotFullyCached && <div>&gt;&gt;</div> }
       </div>
     )
   }
