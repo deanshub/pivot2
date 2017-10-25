@@ -14,6 +14,7 @@ export default class Pager extends Component {
   }
 
   render(){
+	const orel = 'the best'
     const {currentPage, pageCount, pivotFullyCached} = this.props
     return (
       <div className={classnames(style.container)}>
