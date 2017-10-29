@@ -253,9 +253,11 @@ export default class PivotView extends Component {
   getRowPanelSizes(tbody) {
     return Array.from(tbody.childNodes).map(currTr=>{
       return Array.from(currTr.childNodes).filter(currTd=>currTd.rowSpan).map(currTd=> {
-        const newHeight = parseInt(window.getComputedStyle(currTd).height) - 3
+        const tdComputedStyle = window.getComputedStyle(currTd)
+        const newHeight = parseInt(tdComputedStyle.height) - 3
         //const newHeight = 25
-        const newWidth = currTd.offsetWidth-3
+        // const newWidth = currTd.offsetWidth-3
+        const newWidth = parseInt(currTd.clientWidth) - (parseInt(tdComputedStyle.paddingLeft) + parseInt(tdComputedStyle.paddingRight))
 
         return {
           height: `${newHeight}px`,
