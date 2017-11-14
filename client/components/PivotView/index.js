@@ -37,6 +37,7 @@ export default class PivotView extends Component {
       newStickyRowsStyle: {},
       stickyHeaderWrapperStyle: {},
       rowPanelsVisible: false,
+      stickyRowsStyle: {}
     }
 
   }
@@ -175,29 +176,31 @@ export default class PivotView extends Component {
 
           const newStickyHeaderWrapperStyle =
           this.getStickyHeaderWrapperSizes(this.pivotScrollWrapper, pivotHiddenThead)
-
+          
           if (!R.equals(this.state.stickyHeaderWrapperStyle, newStickyHeaderWrapperStyle)) {
             stateToChange.stickyHeaderWrapperStyle = newStickyHeaderWrapperStyle
           }
         }
-
+        
         if (rowsPanelHeaders) {
           const pivotBody = ReactDOM.findDOMNode(this.pivotBody)
           const rowsPanelNewSizes = this.getRowPanelSizes(pivotBody)
           const pivotContainer = ReactDOM.findDOMNode(this.pivotScrollWrapper)
-
+          
           if (!R.equals(this.state.rowsPanelSizes, rowsPanelNewSizes)) {
             stateToChange.rowsPanelSizes = rowsPanelNewSizes
           }
-
+          
           const newStickyRowsStyle = this.getStickyRowsStyles(this.container)
-
+          
           // If there is horizontal scroll then rows panel height should be 9px less
           if (pivotContainer.clientWidth < pivotBody.clientWidth) {
             newStickyRowsStyle.height = newStickyRowsStyle.height - (this.pivotScrollWrapper.offsetHeight - this.pivotScrollWrapper.clientHeight)
           }
 
-          if (!R.equals(this.state.stickyRowsStyle, newStickyRowsStyle)) {
+          let {visibility: _visibility, ...oldStickyRowsStyle} = this.state.stickyRowsStyle
+
+          if (!R.equals(oldStickyRowsStyle, newStickyRowsStyle)) {
             stateToChange.stickyRowsStyle = newStickyRowsStyle
             stateToChange.rowPanelsVisible = true
           }
