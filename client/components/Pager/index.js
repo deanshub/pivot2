@@ -17,12 +17,31 @@ export default class Pager extends Component {
     const {currentPage, pageCount, pivotFullyCached} = this.props
     return (
       <div className={classnames(style.container)}>
-        <div>&lt;&lt;</div>
-        <div>&lt;</div>
-        <div>{currentPage} from {pageCount}{pivotFullyCached?'':'loading...'}</div>
-        <div>&gt;</div>
         {
-          pivotFullyCached ?
+          currentPage>1?
+          <div>&lt;&lt;</div>
+          :null
+        }
+        {
+          currentPage>1?
+          <div>&lt;</div>
+          :null
+        }
+        <div>
+          {!pivotFullyCached?
+          'loading...'
+          :currentPage===pageCount?
+          null
+          :
+          `${currentPage} from ${pageCount}`}
+        </div>
+        {
+          currentPage<pageCount?
+          <div>&gt;</div>
+          : null
+        }
+        {
+          currentPage<pageCount?
           <div>&gt;&gt;</div>
           : null
         }
