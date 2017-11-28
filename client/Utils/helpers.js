@@ -10,7 +10,7 @@ function consolidateHeads(rowsHeaders, colsHeaders, dataHeaders, hierarchies, bo
   }
   const rowsExists = hierarchies.hierarchyRows.length>0
   const colsExists = hierarchies.hierarchyCols.length>0
-  const dataExists = hierarchies.hierarchyData.length>1
+  const dataExists = hierarchies.hierarchyData.length>1&&bodyData.length>0
 
   let headerMatrix = []
   let dataCellsAmountToAdd
