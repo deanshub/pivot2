@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import style from './style.css'
+import helpers from '../../utils/helpers'
 
 export default class PivotBodyCol extends Component {
   static propTypes = {
@@ -33,6 +34,12 @@ export default class PivotBodyCol extends Component {
       :
       undefined
 
+    let backgroundColor
+    
+    if (col && col.format && col.format.color) {
+      backgroundColor = helpers.calculateColor(col.dataValue, col.format.color)
+    }
+
     return (
       <td
           className={
@@ -45,6 +52,9 @@ export default class PivotBodyCol extends Component {
           }
           colSpan={col.colspan}
           rowSpan={col.rowspan}
+          style={{
+            backgroundColor: backgroundColor || undefined,
+          }}
       >
         <div
             dir="auto"

@@ -87,8 +87,65 @@ function getSpecificPanelFromJaql(jaqlQueryData, wantedPanel) {
   })
 }
 
+function calculateColor(cellValue, colorObj) {
+  let parsedCellValue = cellValue ? parseFloat(cellValue.split(',').join('')) : cellValue
+
+  if (!colorObj) {
+    return
+  }
+
+  const { type: colorType } = colorObj
+
+  let calculatedColor
+
+  if (colorType === 'color' && colorObj.color !== 'transparent') {
+    calculatedColor = colorObj.color
+  } else if (colorType === 'condition') {
+    if (isNaN(parsedCellValue)) {
+      return
+    }
+
+    colorObj.conditions.forEach((condition) => {
+      const conditionOperator = condition.operator
+      const conditionValue = parseFloat(condition.expression)
+
+      const conditionApplies = calculateColorCondition(parsedCellValue, conditionOperator, conditionValue)
+
+      if (conditionApplies) { 
+        calculatedColor = condition.color
+      }
+    })
+  }
+
+  return calculatedColor
+}
+
+function calculateColorCondition(cellValue, conditionOperator, conditionValue) {
+  if (isNaN(cellValue)) {
+    return
+  }
+
+  switch (conditionOperator) {
+  case '>':
+    return cellValue > conditionValue
+  case '<':
+    return cellValue < conditionValue
+  case '=':
+    return cellValue == conditionValue
+  case '≥':
+    return cellValue >= conditionValue
+  case '≤':
+    return cellValue <= conditionValue
+  case '≠':
+    return cellValue != conditionValue
+  default:
+    return
+  }
+}
+
 module.exports = {
   getByPath,
   consolidateHeads,
   getSubTotalsFromJaql,
+  calculateColor,
 }
