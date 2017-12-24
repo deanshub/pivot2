@@ -105,14 +105,17 @@ function calculateColor(cellValue, colorObj) {
       return
     }
 
+    let found = false
+    
     colorObj.conditions.forEach((condition) => {
       const conditionOperator = condition.operator
       const conditionValue = parseFloat(condition.expression)
 
       const conditionApplies = calculateColorCondition(parsedCellValue, conditionOperator, conditionValue)
 
-      if (conditionApplies) { 
+      if (conditionApplies && !found) { 
         calculatedColor = condition.color
+        found = true
       }
     })
   }
