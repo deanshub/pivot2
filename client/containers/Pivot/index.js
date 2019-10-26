@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import PivotView from '../../components/PivotView'
 import Pager from '../../components/Pager'
 
+// just a comment
+
 export default class Pivot extends Component {
   static propTypes = {
     bodyData: PropTypes.array,
